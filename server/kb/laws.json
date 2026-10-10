@@ -1,0 +1,155 @@
+{
+  "_note": "Plain-language summaries of laws and rules that give citizens leverage. Not legal advice; the agent must cite only provisions listed here.",
+  "provisions": [
+    {
+      "id": "rti_act",
+      "title": "Right to Information Act, 2005",
+      "topics": ["rti", "information", "status", "file_movement", "accountability", "general"],
+      "summary": "Any citizen can ask any public authority for information held by it. Reasons for asking need not be given.",
+      "key_points": [
+        "Sec. 6(1): apply in writing or electronically to the Public Information Officer (PIO) of the public authority, in English, Hindi or the official language of the area.",
+        "Sec. 6(2): the applicant need not give any reason for requesting information.",
+        "Sec. 6(3): if the information is with another authority, the PIO must transfer the application within 5 days.",
+        "Sec. 7(1): information must be supplied within 30 days; within 48 hours if it concerns the life or liberty of a person.",
+        "Sec. 7(6): if the PIO misses the time limit, the information must be provided free of charge.",
+        "Sec. 19(1): first appeal to the First Appellate Authority within 30 days of the reply or of the deadline expiring.",
+        "Sec. 19(3): second appeal to the Central/State Information Commission within 90 days of the first appeal decision.",
+        "Sec. 20: the Information Commission can impose a penalty on a PIO (₹250 per day, up to ₹25,000) for delay or refusal without reasonable cause.",
+        "RTI gives access to records, file notings, status and documents — it does not compel the authority to answer 'why' questions or give opinions. Ask for records instead."
+      ]
+    },
+    {
+      "id": "rti_rules_2012",
+      "title": "Right to Information Rules, 2012 (Central public authorities)",
+      "topics": ["rti", "fee", "word_limit"],
+      "summary": "Procedure for RTI applications to Central Government public authorities. States have their own rules (fees and word limits differ).",
+      "key_points": [
+        "Application fee ₹10 (demand draft, banker's cheque, Indian Postal Order, or online at rtionline.gov.in for central authorities).",
+        "Applicants below the poverty line pay no fee (attach a copy of the BPL certificate).",
+        "An application should ordinarily not exceed 500 words, excluding the address of the PIO and the applicant.",
+        "Photocopies cost ₹2 per page under the central rules."
+      ]
+    },
+    {
+      "id": "rts_acts",
+      "title": "State Right to Public Services Acts (e.g. Assam RTPS Act, 2012)",
+      "topics": ["certificate", "service_delay", "state_govt", "time_bound"],
+      "summary": "Many states guarantee delivery of notified public services within fixed time limits and allow appeals when officers miss them.",
+      "key_points": [
+        "Each notified service has a designated officer and a stipulated time limit.",
+        "If the time limit lapses or the application is rejected, the citizen can appeal to the Appellate Authority.",
+        "Penalties can be imposed on officers who fail to deliver services without sufficient reason."
+      ]
+    },
+    {
+      "id": "mv_act_198a",
+      "title": "Motor Vehicles Act, 1988 — Section 198A (inserted in 2019)",
+      "topics": ["roads", "pothole", "road_safety", "accident"],
+      "summary": "Makes the designated authority, contractor, consultant or concessionaire responsible for road design, construction and maintenance standards.",
+      "key_points": [
+        "If failure to follow road design, construction or maintenance standards leads to death or disability, the responsible authority/contractor is punishable with a fine of up to ₹1 lakh.",
+        "Useful to cite when a reported pothole or road defect remains unrepaired and poses a safety risk."
+      ]
+    },
+    {
+      "id": "consumer_protection_act",
+      "title": "Consumer Protection Act, 2019",
+      "topics": ["consumer", "ecommerce", "refund", "defective_product", "deficiency_in_service", "insurance", "real_estate", "telecom"],
+      "summary": "Protects consumers against defective goods, deficient services and unfair trade practices.",
+      "key_points": [
+        "Complaints can be filed online through e-Daakhil; a lawyer is not mandatory.",
+        "District Commission: claims up to ₹50 lakh; State Commission: ₹50 lakh–₹2 crore; National Commission: above ₹2 crore.",
+        "Sec. 69: complaint must ordinarily be filed within 2 years from the date the cause of action arose.",
+        "Consumers can seek refund, replacement, compensation for loss or injury, and litigation costs."
+      ]
+    },
+    {
+      "id": "electricity_consumer_rules",
+      "title": "Electricity (Rights of Consumers) Rules, 2020",
+      "topics": ["electricity", "power_cut", "new_connection", "meter", "electricity_bill"],
+      "summary": "Gives electricity consumers enforceable rights to reliable supply, timely connections, correct billing and compensation.",
+      "key_points": [
+        "New connection timelines: 7 days in metro cities, 15 days in other municipal areas, 30 days in rural areas (or as notified by the state commission, if lower).",
+        "Consumers are entitled to compensation when the DISCOM fails to meet notified standards of performance.",
+        "Every DISCOM must have a Consumer Grievance Redressal Forum; further appeal lies to the Electricity Ombudsman."
+      ]
+    },
+    {
+      "id": "rbi_ombudsman_scheme",
+      "title": "Reserve Bank – Integrated Ombudsman Scheme, 2021",
+      "topics": ["banking", "upi", "atm", "loan", "credit_card", "bank_charges", "nbfc"],
+      "summary": "Free, online redress for deficiency in service by RBI-regulated entities.",
+      "key_points": [
+        "First complain to the regulated entity (bank/NBFC/payment app).",
+        "If the complaint is rejected, not resolved satisfactorily, or not answered within 30 days, file at cms.rbi.org.in.",
+        "File with the Ombudsman generally within one year of receiving the entity's reply (or of the 30 days expiring).",
+        "No fee is charged."
+      ]
+    },
+    {
+      "id": "nfsa",
+      "title": "National Food Security Act, 2013",
+      "topics": ["ration", "ration_card", "pds", "food"],
+      "summary": "Legal entitlement to subsidised foodgrains for eligible households through the Public Distribution System.",
+      "key_points": [
+        "Priority households are entitled to 5 kg foodgrains per person per month; Antyodaya (AAY) households to 35 kg per household per month.",
+        "Under the PM Garib Kalyan Anna Yojana, NFSA foodgrains are currently provided free of cost.",
+        "Sec. 15: every district must have a District Grievance Redressal Officer; Sec. 16: State Food Commission hears appeals.",
+        "Sec. 8: food security allowance is payable if entitled foodgrains are not supplied."
+      ]
+    },
+    {
+      "id": "mgnrega",
+      "title": "Mahatma Gandhi National Rural Employment Guarantee Act, 2005",
+      "topics": ["mgnrega", "rural", "wages", "employment"],
+      "summary": "Guarantees 100 days of wage employment per year to every rural household that demands work.",
+      "key_points": [
+        "Work must be provided within 15 days of a written demand; otherwise an unemployment allowance is payable.",
+        "Wages must be paid within 15 days of the closure of the muster roll; delay compensation is 0.05% of unpaid wages per day of delay.",
+        "Always ask for a dated receipt when demanding work."
+      ]
+    },
+    {
+      "id": "rte_act",
+      "title": "Right of Children to Free and Compulsory Education Act, 2009",
+      "topics": ["education", "school", "rte_admission", "fees"],
+      "summary": "Free and compulsory education for children aged 6–14.",
+      "key_points": [
+        "Sec. 12(1)(c): private unaided schools must reserve 25% of entry-level seats for children from weaker sections and disadvantaged groups.",
+        "Sec. 13: no capitation fee and no screening procedure for admission.",
+        "Complaints go to the local authority; the State Commission for Protection of Child Rights monitors RTE."
+      ]
+    },
+    {
+      "id": "senior_citizens_act",
+      "title": "Maintenance and Welfare of Parents and Senior Citizens Act, 2007",
+      "topics": ["senior_citizen", "maintenance", "elderly"],
+      "summary": "Parents and senior citizens who cannot maintain themselves can claim maintenance from children/relatives through a Maintenance Tribunal.",
+      "key_points": [
+        "Application to the Maintenance Tribunal of the sub-division; maximum maintenance up to ₹10,000 per month under the original Act (states may differ).",
+        "Tribunal should ordinarily dispose of the application within 90 days."
+      ]
+    },
+    {
+      "id": "cpgrams_guidelines",
+      "title": "Comprehensive Guidelines for Handling Public Grievances (DARPG, 2024)",
+      "topics": ["central_govt", "general", "pension", "grievance"],
+      "summary": "Central government standards for grievance redressal on CPGRAMS.",
+      "key_points": [
+        "Maximum time for redressal reduced to 21 days; an interim reply with reasons is expected if more time is needed.",
+        "Citizens can appeal on the portal if dissatisfied with the resolution."
+      ]
+    },
+    {
+      "id": "cyber_fraud_guidance",
+      "title": "Cyber fraud reporting (I4C / RBI customer liability norms)",
+      "topics": ["cyber_fraud", "upi_fraud", "fraud", "phishing", "banking"],
+      "summary": "Speed matters: reporting quickly limits your liability and helps freeze money.",
+      "key_points": [
+        "Call 1930 and file at cybercrime.gov.in immediately; money can often be put on hold if reported fast.",
+        "RBI's customer liability circular (2017): zero liability if an unauthorised electronic transaction caused by a third-party breach is reported within 3 working days; limited liability if reported within 4–7 working days.",
+        "Inform your bank in writing and keep the acknowledgement."
+      ]
+    }
+  ]
+}

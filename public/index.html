@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Haq — your AI caseworker</title>
+  <meta name="description" content="Tell Haq your civic problem in any language. It finds the responsible office, drafts your complaint and RTI, and tracks the deadlines." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231D2B64'/><text x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='sans-serif'>हक़</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Mukta:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/" aria-label="Haq home">
+      <span class="brand-mark">हक़</span>
+      <span class="brand-name">Haq</span>
+    </a>
+    <p class="brand-tag">Your AI caseworker for every government problem</p>
+    <span id="modelBadge" class="model-badge" title="Model running the Cline SDK caseworker">…</span>
+  </header>
+
+  <main class="layout">
+    <!-- Intake -->
+    <section class="intake" aria-labelledby="intakeTitle">
+      <h1 id="intakeTitle">What's wrong? <span class="hi" lang="hi">क्या परेशानी है?</span></h1>
+      <p class="lede">Say it or type it in your own language. Haq finds the office responsible, writes your complaint and RTI, and tells you exactly what to do next.</p>
+
+      <form id="intakeForm" class="intake-form" autocomplete="off">
+        <div class="speak">
+          <label for="problem" class="sr-only">Describe your problem</label>
+          <textarea id="problem" name="problem" rows="5" required minlength="8"
+            placeholder="e.g. मेरे घर के सामने सड़क पर बड़ा गड्ढा है, 3 हफ़्ते से — कल एक स्कूटर वाला गिर गया।"></textarea>
+          <button type="button" id="micBtn" class="mic" aria-pressed="false" aria-label="Speak your problem">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg>
+            <span id="micLabel">Speak</span>
+          </button>
+        </div>
+
+        <div class="row">
+          <label>Language
+            <select id="lang" name="lang">
+              <option value="hi-IN" data-name="Hindi">हिन्दी · Hindi</option>
+              <option value="en-IN" data-name="English">English</option>
+              <option value="as-IN" data-name="Assamese">অসমীয়া · Assamese</option>
+              <option value="bn-IN" data-name="Bengali">বাংলা · Bengali</option>
+              <option value="ta-IN" data-name="Tamil">தமிழ் · Tamil</option>
+              <option value="te-IN" data-name="Telugu">తెలుగు · Telugu</option>
+              <option value="mr-IN" data-name="Marathi">मराठी · Marathi</option>
+              <option value="gu-IN" data-name="Gujarati">ગુજરાતી · Gujarati</option>
+              <option value="kn-IN" data-name="Kannada">ಕನ್ನಡ · Kannada</option>
+              <option value="ml-IN" data-name="Malayalam">മലയാളം · Malayalam</option>
+              <option value="pa-IN" data-name="Punjabi">ਪੰਜਾਬੀ · Punjabi</option>
+              <option value="or-IN" data-name="Odia">ଓଡ଼ିଆ · Odia</option>
+            </select>
+          </label>
+          <label>City / district
+            <input id="city" name="city" placeholder="Guwahati" />
+          </label>
+          <label>State
+            <input id="state" name="state" placeholder="Assam" list="states" />
+          </label>
+        </div>
+
+        <div class="row row-end">
+          <label class="photo" id="photoLabel">
+            <input type="file" id="photo" accept="image/*" capture="environment" />
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 7.2 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.2L15 4H9Zm3 4.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg>
+            <span id="photoText">Add a photo (optional)</span>
+          </label>
+          <button type="submit" class="primary" id="openBtn">Open my case</button>
+        </div>
+        <p id="formError" class="form-error" role="alert" hidden></p>
+      </form>
+
+      <div class="examples" aria-label="Example problems">
+        <p class="examples-title">Try one</p>
+        <button class="chip" data-lang="hi-IN" data-city="Guwahati" data-state="Assam" data-text="GS Road pe Ganeshguri flyover ke paas bahut bada gaddha hai, 3 hafte se. Kal raat ek scooter wala gir gaya. Shikayat ki thi par kuch nahi hua.">Pothole on GS Road</button>
+        <button class="chip" data-lang="hi-IN" data-city="Barpeta" data-state="Assam" data-text="मेरी माँ की वृद्धा पेंशन पिछले 5 महीने से बैंक खाते में नहीं आई है। ब्लॉक ऑफिस में दो बार गए, कोई जवाब नहीं।">Mother's pension stopped</button>
+        <button class="chip" data-lang="en-IN" data-city="Pune" data-state="Maharashtra" data-text="Someone took Rs 18,000 from my account yesterday through a fake UPI collect request pretending to be a courier company.">UPI fraud, ₹18,000</button>
+        <button class="chip" data-lang="en-IN" data-city="Guwahati" data-state="Assam" data-text="Our lane in Zoo Road has had power cuts of 5-6 hours every day for two weeks. The transformer sparks at night. Complaints on 1912 got docket numbers but no fix.">Daily power cuts</button>
+      </div>
+
+      <section class="my-cases" aria-labelledby="casesTitle">
+        <h2 id="casesTitle">My cases</h2>
+        <ul id="caseList" class="case-list"><li class="muted">No cases yet.</li></ul>
+      </section>
+    </section>
+
+    <!-- Desk -->
+    <section class="desk" id="desk" aria-live="polite">
+      <div class="desk-empty" id="deskEmpty">
+        <div class="folder" aria-hidden="true">
+          <div class="folder-tab">CASE FILE</div>
+          <div class="folder-body">
+            <span class="folder-line"></span><span class="folder-line short"></span><span class="folder-line"></span>
+          </div>
+        </div>
+        <h2>Your case file opens here</h2>
+        <p>Haq's caseworker works in front of you: it finds the office responsible, checks the law, drafts your papers, checks them against a filing checklist, and plans your deadlines.</p>
+        <ul class="promise">
+          <li><strong>Right office, first time.</strong> Grounded in a directory of real grievance channels — never invented.</li>
+          <li><strong>Papers that don't get rejected.</strong> Every draft passes a filing checklist before you see it.</li>
+          <li><strong>It doesn't forget.</strong> When the 30 days run out, it writes your appeal.</li>
+        </ul>
+      </div>
+
+      <article class="case" id="case" hidden>
+        <header class="case-cover">
+          <div class="case-meta">
+            <span class="case-id" id="caseId"></span>
+            <span class="case-model" id="caseModel"></span>
+          </div>
+          <h2 id="caseTitle" class="case-title">Opening your case…</h2>
+          <p class="case-authority" id="caseAuthority"></p>
+          <div class="stamp" id="stamp" hidden></div>
+        </header>
+
+        <div class="emergency" id="emergency" hidden role="alert"></div>
+
+        <div class="case-grid">
+          <section class="log" aria-labelledby="logTitle">
+            <h3 id="logTitle">Caseworker at work <span class="log-sub">Cline agent · plan → act → verify</span></h3>
+            <ol id="log" class="log-list"></ol>
+            <form id="followForm" class="follow" hidden>
+              <label for="followText" class="sr-only">Ask the caseworker</label>
+              <input id="followText" placeholder="Ask a question or tell Haq what happened…" />
+              <button type="button" class="mic mic-sm" id="followMic" aria-label="Speak"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg></button>
+              <button class="secondary" type="submit">Send</button>
+            </form>
+          </section>
+
+          <section class="papers">
+            <nav class="tabs" role="tablist" id="tabs"></nav>
+            <div id="panel" class="panel" role="tabpanel"></div>
+          </section>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <datalist id="states">
+    <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option><option>Bihar</option><option>Chhattisgarh</option><option>Delhi</option><option>Goa</option><option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option><option>Jharkhand</option><option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option><option>Odisha</option><option>Punjab</option><option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option><option>Jammu and Kashmir</option><option>Ladakh</option><option>Puducherry</option><option>Chandigarh</option>
+  </datalist>
+
+  <footer class="foot">
+    Haq drafts paperwork and points you to official channels; it is not a lawyer. Verify portal links and helplines before filing. Free legal aid: NALSA 15100.
+  </footer>
+
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

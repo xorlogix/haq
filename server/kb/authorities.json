@@ -1,0 +1,718 @@
+{
+  "_note": "Curated directory of Indian grievance channels. Scope: 'central' (all India), 'state' (state-specific; 'states' lists which), 'city' (city-specific). Always tell the citizen to verify URLs/helplines before filing. Add entries freely — the agent reads this file at runtime.",
+  "authorities": [
+    {
+      "id": "cpgrams",
+      "name": "CPGRAMS — Centralised Public Grievance Redress and Monitoring System (DARPG)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "central_govt",
+        "pension",
+        "railways",
+        "postal",
+        "banking",
+        "telecom",
+        "passport",
+        "general"
+      ],
+      "handles": "Grievances against any Central Government ministry/department and its organisations; also routes to state governments. Central pensioners use the pension (CPENGRAMS) section.",
+      "file_via": [
+        {
+          "channel": "Online portal",
+          "url": "https://pgportal.gov.in",
+          "notes": "Register, choose ministry/department, attach documents. Also available as the CPGRAMS mobile app and via Common Service Centres."
+        }
+      ],
+      "helpline": "Use the portal / CPGRAMS app",
+      "timeline_days": 21,
+      "timeline_note": "Central government guidelines (Aug 2024) set a maximum of 21 days for grievance disposal; an interim reply is expected if more time is needed.",
+      "escalation": [
+        "Appeal on the same portal after closure if dissatisfied",
+        "RTI to the concerned ministry asking for action-taken report"
+      ]
+    },
+    {
+      "id": "municipal_corporation",
+      "name": "Municipal Corporation / Nagar Nigam / Nagar Palika (urban local body)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "roads",
+        "pothole",
+        "streetlight",
+        "garbage",
+        "sanitation",
+        "drainage",
+        "water",
+        "stray_animals",
+        "property_tax",
+        "birth_death_certificate"
+      ],
+      "handles": "City roads (non-highway), potholes, streetlights, garbage collection, drains, local water supply in many cities, birth/death certificates.",
+      "file_via": [
+        {
+          "channel": "City grievance portal / app",
+          "url": null,
+          "notes": "Most cities have a grievance portal or app on the municipal website. Search '<city> municipal corporation complaint'."
+        },
+        {
+          "channel": "Swachhata app (MoHUA)",
+          "url": null,
+          "notes": "Swachhata-MoHUA mobile app (Android/iOS) for garbage, sanitation, public toilets in urban areas."
+        },
+        {
+          "channel": "Written complaint",
+          "url": null,
+          "notes": "Submit to the Ward Office / Executive Engineer; keep a stamped receiving copy."
+        }
+      ],
+      "helpline": "Varies by city",
+      "timeline_days": null,
+      "timeline_note": "Many states notify service timelines under their Right to Public Services Act or the city's Citizen Charter.",
+      "escalation": [
+        "Municipal Commissioner",
+        "State Urban Development Department",
+        "CM grievance portal of the state",
+        "RTI asking for status and responsible officer"
+      ]
+    },
+    {
+      "id": "gram_panchayat",
+      "name": "Gram Panchayat / Block Development Office (rural local body)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "roads",
+        "pothole",
+        "water",
+        "sanitation",
+        "streetlight",
+        "mgnrega",
+        "housing_scheme",
+        "rural"
+      ],
+      "handles": "Village roads, handpumps/water, sanitation, MGNREGA job cards and work, rural housing scheme lists.",
+      "file_via": [
+        {
+          "channel": "Gram Sabha / Panchayat office",
+          "url": null,
+          "notes": "Raise in Gram Sabha or submit written complaint to Panchayat Secretary; escalate to BDO."
+        },
+        {
+          "channel": "MGNREGA grievances",
+          "url": "https://nrega.nic.in",
+          "notes": "Check job card, muster rolls and payment status."
+        }
+      ],
+      "helpline": "Varies by state",
+      "timeline_days": 15,
+      "timeline_note": "Under MGNREGA, work must be provided within 15 days of demand and wages paid within 15 days of the muster roll closing; delayed wages earn compensation.",
+      "escalation": [
+        "Block Development Officer (BDO)",
+        "District Programme Coordinator / District Collector",
+        "Ombudsperson for MGNREGA in the district"
+      ]
+    },
+    {
+      "id": "state_pwd",
+      "name": "State Public Works Department (PWD) — Roads",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "roads",
+        "pothole",
+        "bridge",
+        "state_highway"
+      ],
+      "handles": "State highways, major district roads and bridges maintained by the state.",
+      "file_via": [
+        {
+          "channel": "State PWD website / CM grievance portal",
+          "url": null,
+          "notes": "Many states run road-complaint apps; otherwise write to the Executive Engineer of the PWD division."
+        }
+      ],
+      "helpline": "Varies by state",
+      "timeline_days": null,
+      "escalation": [
+        "Superintending Engineer",
+        "Chief Engineer, PWD",
+        "State CM grievance cell"
+      ]
+    },
+    {
+      "id": "nhai",
+      "name": "National Highways Authority of India (NHAI)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "roads",
+        "pothole",
+        "national_highway",
+        "toll"
+      ],
+      "handles": "Potholes, safety hazards, toll plaza issues on National Highways.",
+      "file_via": [
+        {
+          "channel": "National Highway helpline",
+          "url": "https://nhai.gov.in",
+          "notes": "Call 1033 from any phone while on a National Highway; also the 'Rajmargyatra' app."
+        }
+      ],
+      "helpline": "1033",
+      "timeline_days": null,
+      "escalation": [
+        "NHAI Project Director (PIU)",
+        "CPGRAMS (Ministry of Road Transport & Highways)"
+      ]
+    },
+    {
+      "id": "discom",
+      "name": "Electricity Distribution Company (DISCOM) + Consumer Grievance Redressal Forum",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "electricity",
+        "power_cut",
+        "electricity_bill",
+        "new_connection",
+        "meter"
+      ],
+      "handles": "Power cuts, wrong bills, meter faults, new connection delays, voltage problems.",
+      "file_via": [
+        {
+          "channel": "DISCOM helpline",
+          "url": null,
+          "notes": "1912 is the common electricity complaint number in many states; always note the complaint/docket number."
+        },
+        {
+          "channel": "Consumer Grievance Redressal Forum (CGRF)",
+          "url": null,
+          "notes": "If the DISCOM does not resolve the complaint, file before the CGRF of your DISCOM."
+        }
+      ],
+      "helpline": "1912 (most states)",
+      "timeline_days": null,
+      "timeline_note": "Electricity (Rights of Consumers) Rules, 2020 set maximum times for new connections (7 days metro / 15 days other municipal areas / 30 days rural) and provide for compensation when DISCOMs miss standards.",
+      "escalation": [
+        "Consumer Grievance Redressal Forum",
+        "Electricity Ombudsman of the State Electricity Regulatory Commission"
+      ]
+    },
+    {
+      "id": "rbi_ombudsman",
+      "name": "RBI Integrated Ombudsman Scheme (via the bank's grievance cell first)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "banking",
+        "upi",
+        "atm",
+        "loan",
+        "credit_card",
+        "bank_charges",
+        "nbfc"
+      ],
+      "handles": "Deficiency in service by banks, NBFCs, payment system operators: failed transactions, unfair charges, loan harassment, card issues.",
+      "file_via": [
+        {
+          "channel": "Bank's own grievance redressal",
+          "url": null,
+          "notes": "Complain to the bank first and keep the reference number."
+        },
+        {
+          "channel": "RBI Complaint Management System",
+          "url": "https://cms.rbi.org.in",
+          "notes": "If the bank rejects or does not reply within 30 days, file with the RBI Ombudsman (generally within one year of the bank's reply)."
+        }
+      ],
+      "helpline": "14448 (RBI contact centre)",
+      "timeline_days": 30,
+      "timeline_note": "Bank gets 30 days to resolve before you can approach the RBI Ombudsman.",
+      "escalation": [
+        "RBI Ombudsman",
+        "Appellate Authority (Executive Director, RBI)"
+      ]
+    },
+    {
+      "id": "cyber_crime",
+      "name": "National Cyber Crime Reporting Portal (I4C, MHA)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "cyber_fraud",
+        "upi_fraud",
+        "online_harassment",
+        "sextortion",
+        "phishing",
+        "fraud"
+      ],
+      "handles": "Online financial fraud, UPI/card scams, social-media harassment, sextortion.",
+      "file_via": [
+        {
+          "channel": "Helpline 1930 — call immediately for money frauds",
+          "url": null,
+          "notes": "Calling within the first hours ('golden hour') gives the best chance of freezing the money."
+        },
+        {
+          "channel": "Online complaint",
+          "url": "https://cybercrime.gov.in",
+          "notes": "Keep transaction IDs, screenshots, phone numbers, UPI IDs."
+        },
+        {
+          "channel": "Sanchar Saathi / Chakshu",
+          "url": "https://sancharsaathi.gov.in",
+          "notes": "Report fraud calls/SMS and block lost phones."
+        }
+      ],
+      "helpline": "1930",
+      "timeline_days": null,
+      "escalation": [
+        "Local police station / cyber cell (FIR)",
+        "Bank's fraud team (request to freeze/charge-back)"
+      ]
+    },
+    {
+      "id": "consumer_helpline",
+      "name": "National Consumer Helpline + Consumer Commission (e-Daakhil)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "consumer",
+        "ecommerce",
+        "defective_product",
+        "refund",
+        "overcharging",
+        "insurance",
+        "telecom",
+        "real_estate"
+      ],
+      "handles": "Defective goods, deficient services, refunds, MRP overcharging, e-commerce disputes.",
+      "file_via": [
+        {
+          "channel": "National Consumer Helpline",
+          "url": "https://consumerhelpline.gov.in",
+          "notes": "Call 1915 or WhatsApp; pre-litigation mediation with the company."
+        },
+        {
+          "channel": "e-Daakhil (file a consumer case online)",
+          "url": "https://edaakhil.nic.in",
+          "notes": "District Commission handles claims up to ₹50 lakh; State ₹50 lakh–₹2 crore; National above ₹2 crore."
+        }
+      ],
+      "helpline": "1915",
+      "timeline_days": null,
+      "timeline_note": "A consumer complaint must generally be filed within 2 years of the cause of action (Sec. 69, Consumer Protection Act, 2019).",
+      "escalation": [
+        "District Consumer Disputes Redressal Commission",
+        "State Commission (appeal)"
+      ]
+    },
+    {
+      "id": "pds_food",
+      "name": "Public Distribution System — District Grievance Redressal Officer (NFSA)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "ration",
+        "ration_card",
+        "pds",
+        "food"
+      ],
+      "handles": "Ration not given, short weight, ration card not issued or deleted, fair-price shop misconduct.",
+      "file_via": [
+        {
+          "channel": "State food helpline",
+          "url": null,
+          "notes": "Many states use 1967 or 1800-series food helplines."
+        },
+        {
+          "channel": "District Grievance Redressal Officer (DGRO)",
+          "url": null,
+          "notes": "Every district must have a DGRO under Sec. 15 of the National Food Security Act, 2013."
+        }
+      ],
+      "helpline": "1967 (many states)",
+      "timeline_days": null,
+      "escalation": [
+        "State Food Commission (appeal against DGRO order)"
+      ]
+    },
+    {
+      "id": "pmjay",
+      "name": "Ayushman Bharat PM-JAY (National Health Authority)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "health_scheme",
+        "hospital_refused",
+        "ayushman_card",
+        "health"
+      ],
+      "handles": "Empanelled hospital refusing cashless treatment, asking money from PM-JAY beneficiaries, card problems.",
+      "file_via": [
+        {
+          "channel": "PM-JAY helpline",
+          "url": "https://cgrms.pmjay.gov.in",
+          "notes": "Call 14555 or file on the grievance portal."
+        }
+      ],
+      "helpline": "14555",
+      "timeline_days": null,
+      "escalation": [
+        "State Health Agency grievance committee",
+        "District grievance committee"
+      ]
+    },
+    {
+      "id": "railmadad",
+      "name": "Rail Madad (Indian Railways)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "railways",
+        "train",
+        "refund"
+      ],
+      "handles": "Complaints during or about train journeys: cleanliness, security, refunds, staff behaviour.",
+      "file_via": [
+        {
+          "channel": "Rail Madad",
+          "url": "https://railmadad.indianrailways.gov.in",
+          "notes": "Call 139 or use the RailMadad app; share PNR."
+        }
+      ],
+      "helpline": "139",
+      "timeline_days": null,
+      "escalation": [
+        "CPGRAMS (Ministry of Railways)"
+      ]
+    },
+    {
+      "id": "police_emergency",
+      "name": "Police / Emergency Response",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "emergency",
+        "police",
+        "theft",
+        "violence",
+        "safety",
+        "women_safety",
+        "child_safety"
+      ],
+      "handles": "Any emergency or crime. FIR for cognizable offences; e-FIR/online complaint in most states for theft and lost items.",
+      "file_via": [
+        {
+          "channel": "Emergency",
+          "url": null,
+          "notes": "112 (all emergencies), 181 (women helpline), 1098 (children), 108 (ambulance in most states)."
+        },
+        {
+          "channel": "Nearest police station",
+          "url": null,
+          "notes": "Police must register an FIR for cognizable offences; Zero FIR can be filed at any station."
+        }
+      ],
+      "helpline": "112",
+      "timeline_days": null,
+      "escalation": [
+        "Superintendent of Police (written complaint)",
+        "Judicial Magistrate",
+        "State Human Rights Commission"
+      ]
+    },
+    {
+      "id": "labour",
+      "name": "Labour Department / SAMADHAN portal",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "wages",
+        "salary_not_paid",
+        "labour",
+        "pf",
+        "employment"
+      ],
+      "handles": "Unpaid wages, illegal termination, PF/ESI issues.",
+      "file_via": [
+        {
+          "channel": "SAMADHAN (Ministry of Labour)",
+          "url": "https://samadhan.labour.gov.in",
+          "notes": "For industrial disputes in the central sphere; state labour departments handle others."
+        },
+        {
+          "channel": "EPFiGMS (PF grievances)",
+          "url": "https://epfigms.gov.in",
+          "notes": "For provident fund withdrawal/transfer problems."
+        }
+      ],
+      "helpline": "Varies",
+      "timeline_days": null,
+      "escalation": [
+        "Labour Commissioner",
+        "Labour Court"
+      ]
+    },
+    {
+      "id": "education_rte",
+      "name": "Education Department / State Commission for Protection of Child Rights (RTE)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "education",
+        "school",
+        "rte_admission",
+        "scholarship",
+        "fees"
+      ],
+      "handles": "RTE 25% seat denial in private schools, capitation fees, scholarship not credited, school infrastructure.",
+      "file_via": [
+        {
+          "channel": "District Education Officer",
+          "url": null,
+          "notes": "Written complaint with admission documents."
+        },
+        {
+          "channel": "National Scholarship Portal",
+          "url": "https://scholarships.gov.in",
+          "notes": "For central scholarship status/grievances."
+        }
+      ],
+      "helpline": "Varies",
+      "timeline_days": null,
+      "escalation": [
+        "State Commission for Protection of Child Rights",
+        "National Commission for Protection of Child Rights"
+      ]
+    },
+    {
+      "id": "social_welfare_pension",
+      "name": "Social Welfare Department — Old age / widow / disability pensions (NSAP & state schemes)",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "pension",
+        "old_age_pension",
+        "widow_pension",
+        "disability_pension",
+        "welfare_scheme"
+      ],
+      "handles": "Social security pension not sanctioned, stopped, or delayed.",
+      "file_via": [
+        {
+          "channel": "Block / District Social Welfare Officer",
+          "url": null,
+          "notes": "Written complaint with pension ID, bank passbook, Aadhaar copy."
+        },
+        {
+          "channel": "NSAP portal (status)",
+          "url": "https://nsap.nic.in",
+          "notes": "Check sanction and payment status."
+        }
+      ],
+      "helpline": "Varies by state",
+      "timeline_days": null,
+      "escalation": [
+        "District Collector",
+        "State CM grievance portal",
+        "RTI asking for file status"
+      ]
+    },
+    {
+      "id": "telecom",
+      "name": "Telecom operator appellate authority / TRAI consumer guidance",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "telecom",
+        "mobile",
+        "broadband",
+        "spam_calls"
+      ],
+      "handles": "Billing disputes, network issues, unwanted commercial calls.",
+      "file_via": [
+        {
+          "channel": "Operator complaint centre, then operator's Appellate Authority",
+          "url": null,
+          "notes": "Keep the docket number; appeal if unresolved."
+        },
+        {
+          "channel": "DND / spam",
+          "url": "https://sancharsaathi.gov.in",
+          "notes": "Report spam/fraud communication via Chakshu; register DND by SMS 1909."
+        }
+      ],
+      "helpline": "1909 (DND)",
+      "timeline_days": null,
+      "escalation": [
+        "CPGRAMS (Department of Telecommunications)",
+        "Consumer Commission"
+      ]
+    },
+    {
+      "id": "state_cm_portal",
+      "name": "State Chief Minister's grievance portal",
+      "scope": "central",
+      "states": [
+        "*"
+      ],
+      "categories": [
+        "general",
+        "state_govt",
+        "roads",
+        "water",
+        "electricity",
+        "pension",
+        "police",
+        "land_records",
+        "health"
+      ],
+      "handles": "Any grievance against a state government department; useful escalation when the department ignores you.",
+      "file_via": [
+        {
+          "channel": "State CM helpline / portal",
+          "url": null,
+          "notes": "Most states run one (e.g. Jansunwai, CM Helpline). Search '<state> CM grievance portal'."
+        }
+      ],
+      "helpline": "Varies by state",
+      "timeline_days": null,
+      "escalation": [
+        "Department secretary",
+        "Lokayukta (for corruption)"
+      ]
+    },
+    {
+      "id": "gmc_guwahati",
+      "name": "Guwahati Municipal Corporation (GMC)",
+      "scope": "city",
+      "states": [
+        "Assam"
+      ],
+      "cities": [
+        "Guwahati"
+      ],
+      "categories": [
+        "roads",
+        "pothole",
+        "garbage",
+        "sanitation",
+        "drainage",
+        "streetlight",
+        "property_tax",
+        "birth_death_certificate"
+      ],
+      "handles": "Municipal roads, drains, garbage and streetlights within Guwahati city limits.",
+      "file_via": [
+        {
+          "channel": "GMC website / zonal office",
+          "url": "https://gmc.assam.gov.in",
+          "notes": "Submit to the concerned zonal office; ask for a stamped receipt or complaint number."
+        }
+      ],
+      "helpline": "See GMC website",
+      "timeline_days": null,
+      "escalation": [
+        "GMC Commissioner",
+        "Guwahati Development Department, Govt. of Assam",
+        "Assam CM grievance cell"
+      ]
+    },
+    {
+      "id": "apdcl",
+      "name": "Assam Power Distribution Company Ltd (APDCL)",
+      "scope": "state",
+      "states": [
+        "Assam"
+      ],
+      "categories": [
+        "electricity",
+        "power_cut",
+        "electricity_bill",
+        "new_connection",
+        "meter"
+      ],
+      "handles": "Electricity supply and billing in Assam.",
+      "file_via": [
+        {
+          "channel": "APDCL helpline / website",
+          "url": "https://www.apdcl.org",
+          "notes": "Call 1912; note the docket number."
+        }
+      ],
+      "helpline": "1912",
+      "timeline_days": null,
+      "escalation": [
+        "APDCL Consumer Grievance Redressal Forum",
+        "Electricity Ombudsman, Assam Electricity Regulatory Commission"
+      ]
+    },
+    {
+      "id": "assam_rtps",
+      "name": "Assam Right to Public Services (RTPS) portal",
+      "scope": "state",
+      "states": [
+        "Assam"
+      ],
+      "categories": [
+        "certificate",
+        "income_certificate",
+        "caste_certificate",
+        "trade_licence",
+        "land_records",
+        "state_govt"
+      ],
+      "handles": "Time-bound delivery of notified services (certificates, licences, mutation) under the Assam Right to Public Services Act, 2012.",
+      "file_via": [
+        {
+          "channel": "RTPS portal",
+          "url": "https://rtps.assam.gov.in",
+          "notes": "Apply/track notified services; if the stipulated time lapses, appeal to the Appellate Authority."
+        }
+      ],
+      "helpline": "See portal",
+      "timeline_days": null,
+      "escalation": [
+        "Appellate Authority under Assam RTPS Act",
+        "Reviewing Authority"
+      ]
+    }
+  ]
+}
