@@ -22,23 +22,27 @@ The Right to Information Act, consumer law, electricity consumer rules, the RBI 
 
 Haq is a voice-first web app that works like a free, tireless caseworker:
 
-1. **Tell it.** Speak or type in Hindi, Hinglish, Assamese, Bengali, Tamil and other languages. You can attach a photo of the pothole, the notice or the bill.
-2. **Watch it work.** A live log shows the agent's Plan → Act → Verify loop: finding the authority, looking up the law, drafting the papers, running the filing checklist and fixing anything it flags.
+1. **Tell it, or show it a notice.** Speak or type in Hindi, Hinglish, Assamese, Bengali, Tamil and other languages, attaching a photo of the pothole, notice or bill. Switch to **"Explain a notice I received"** mode and just attach a photo — Haq reads it and explains who sent it, what it wants, the deadline and what happens if you ignore it, without guessing anything it can't actually read.
+2. **Watch it work.** A live log shows the agent's Plan → Act → Verify loop: finding the authority, looking up the law, drafting the papers, running the filing checklist and fixing anything it flags — rendered as readable text, not raw markdown.
 3. **Get a case file** with:
-   - a **plain-language summary in your language** that you can play aloud for low-literacy users,
+   - a **plain-language summary in your language** that you can play aloud for low-literacy users, and the whole **interface itself in English or हिन्दी**,
    - the **responsible authority**, with the real portal, helpline and escalation ladder,
-   - a **formal complaint** and an **RTI application under Sec. 6(1)**, with blanks for your details and a fill-in editor, print-to-PDF and WhatsApp sharing,
+   - a **formal complaint** and an **RTI application under Sec. 6(1)**, always drafted in **English** (every office accepts it) — with a one-tap **"Get a copy in [your language]"** translation for your own understanding, never the file-ready version,
+   - blanks for your details, a fill-in editor, print-to-PDF, WhatsApp sharing, and a **"Print full case file"** button that lays out the summary, steps, checklist and every document (one per page) for a single printout,
    - **statutory deadlines** worked out by code, not guessed by the LLM.
 4. **Mark as filed.** Haq counts the days. When the 30-day RTI deadline passes, one tap tells the caseworker to draft the **First Appeal under Sec. 19(1)**, check it, and update your next steps and deadlines.
+5. **Run it with zero setup.** No API key? Haq automatically reuses the Cline account already signed into this machine — judges and teammates get live AI with just `npm install && npm start`.
 
 ### What makes it different
 | | Typical "AI legal chatbot" | Haq |
 |---|---|---|
 | Authority & helplines | Hallucinated from model memory | Grounded tool calls to a curated directory (city → state → national) |
-| Drafts | Free text, often rejected (e.g. "why" questions in an RTI, over the word limit) | A deterministic **filing checklist** that the agent must pass. It rewrites the draft until it does |
+| Drafts | Free text, often rejected (e.g. "why" questions in an RTI, over the word limit, missing PIN code) | A deterministic **filing checklist**, language-aware (English and Hindi), that the agent must pass. It rewrites the draft until it does |
 | Deadlines | "Usually about a month" | Exact dates from the statute's rules (RTI 30 days → first appeal +30 → second appeal +90) |
-| After the chat | Nothing | A persistent case with countdowns and one-tap escalation |
-| Language | English | The citizen's language for everything they read, English for the official papers |
+| After the chat | Nothing | A persistent case with countdowns, one-tap escalation and a one-tap full-case printout |
+| Language | English | Official papers always in English (accepted everywhere); the citizen's language for the summary, the UI, and an on-demand translated copy of any document |
+| Notices | Can't read a photo of a government/bank/court notice | A dedicated mode reads the photo and explains sender, demand, deadline and consequences — or says plainly if it can't read it |
+| Setup | Needs an API key from day one | Reuses the Cline account already signed into this machine — zero config |
 
 ## Cline inside the product
 
@@ -68,7 +72,7 @@ await agent.run(intakeMessageWithOptionalPhoto);
 | `find_authorities` | Ranks 20+ grievance bodies (municipal corporations, PWD, NHAI, DISCOMs, CPGRAMS, RBI Ombudsman, cyber crime 1930, consumer commissions, PDS, PM-JAY, local Assam bodies such as GMC, APDCL and RTPS) by category and location |
 | `lookup_law` | Returns citable provisions (RTI Act, RTI Rules 2012, Consumer Protection Act, Electricity Consumer Rules 2020, RBI Ombudsman Scheme, NFSA, MGNREGA, RTE, MV Act 198A…) |
 | `write_document` | Writes the complaint, RTI or appeal as Markdown files in the case folder |
-| `review_draft` | Runs the filing checklist: Sec. 6(1) cited, fee/BPL mentioned, numbered requests, **no "why" questions**, **≤500 words**, addressee, location, dates, relief, enclosures |
+| `review_draft` | Runs the filing checklist, in English or Hindi: Sec. 6(1) cited, fee/BPL mentioned, numbered requests, **no "why" questions**, **≤500 words** (RTI) / **≤450 words** (complaint), addressee, location, PIN code, dates, relief, enclosures, and — for notice explainers — who sent it plus a deadline (or that none was found) |
 | `compute_deadlines` | Statutory date arithmetic (RTI, first appeal, CPGRAMS 21 days, bank 30 days, consumer 2 years…) |
 | `read_case_file` | Gives the agent memory of the case for follow-ups and escalation |
 | `finalize_case` | Publishes the structured summary, steps and checklist (in the citizen's language) to the dashboard |
@@ -104,13 +108,14 @@ haq/
 │   ├── deadlines.ts          # statutory date rules
 │   ├── agent/
 │   │   ├── caseworker.ts     # Cline SDK Agent lifecycle, event → trace streaming, continue()
+│   │   ├── credentials.ts    # env key → local Cline sign-in → offline demo, resolved per agent
 │   │   ├── tools.ts          # 7 custom tools (createTool + zod)
-│   │   ├── review.ts         # deterministic filing checklist
+│   │   ├── review.ts         # deterministic, language-aware filing checklist
 │   │   ├── prompt.ts         # caseworker playbook
 │   │   └── demoModel.ts      # scripted AgentModel for offline demos
 │   ├── cases/store.ts        # file-based case folders + event bus
 │   └── kb/                   # authorities.json, laws.json (+ search)
-├── public/                   # index.html, styles.css, app.js (no build step)
+├── public/                   # index.html, styles.css, app.js, i18n.js (no build step)
 ├── scripts/smoke.ts          # end-to-end test through the agent loop
 ├── .clinerules/              # rules Cline follows when working on this repo
 └── docs/                     # demo script, Cline build prompts, social post
@@ -120,7 +125,7 @@ haq/
 - **Agent:** `@cline/sdk` 0.0.92 (`Agent`, `createTool`, streaming runtime events)
 - **Models:** any Cline SDK provider. Default `cline` → `anthropic/claude-sonnet-5`. Also works with ClinePass open-weight models (GLM, Qwen, DeepSeek, Kimi…) and local Ollama
 - **Backend:** Node 22, TypeScript (tsx), Express, zod v4, server-sent events, file-based case storage
-- **Frontend:** vanilla HTML/CSS/JS, Web Speech API (speech-to-text in Indian languages), SpeechSynthesis (read-aloud), on-device photo downscaling, print-to-PDF stylesheet, WhatsApp share
+- **Frontend:** vanilla HTML/CSS/JS, an `i18n.js` dictionary for the English/Hindi interface chrome, Web Speech API (speech-to-text in Indian languages), SpeechSynthesis (read-aloud), on-device photo downscaling, print-to-PDF stylesheets (single document and full case file), WhatsApp share
 - **Type:** Mukta (Ek Type, Devanagari + Latin) for the UI, Courier Prime for "typed" official drafts
 
 ## Setup
@@ -149,10 +154,16 @@ The credential source actually in use (env key / signed-in Cline account / offli
 See [Cline inside the product](#cline-inside-the-product). The caseworker *is* a Cline SDK agent with seven custom tools, a self-review loop and multi-turn escalation through `agent.continue()`.
 
 ### In the build
-<!-- ✍️ Fill this in truthfully from your own Cline sessions before submitting. Keep screenshots/recordings. -->
-- Cline (VS Code extension, Plan → Act mode, model: _____) was our coding partner throughout. Project conventions live in [`.clinerules/`](.clinerules) so every Cline session follows the same rules (no LLM date math, every document type needs reviewer checks, never invent helplines).
-- Features built with Cline during the hackathon: _see [docs/CLINE_BUILD_PROMPTS.md](docs/CLINE_BUILD_PROMPTS.md) and list the ones you shipped here, with commit links._
-- Cline ran `npm run check` and `npm test` after each change to verify its own work.
+Cline (Plan → Act mode, model **Claude Sonnet 5** via Cline usage billing) was the coding partner for every change after the initial scaffold was committed by hand. Project conventions live in [`.clinerules/`](.clinerules) (no LLM date math, every document type needs reviewer checks, never invent helplines) and guided every session; Cline ran `npm run check` and `npm test` after each change to verify its own work before moving on.
+
+Commit-by-commit, from the real git history (after `208dfc2`, the hand-committed initial scaffold):
+- `9e1adf0` feat: reuse local Cline sign-in for the caseworker agent — added `server/agent/credentials.ts` to resolve env key → the Cline account already signed into the machine → offline demo, re-resolved per case agent so judges/teammates get live AI with zero config.
+- `f63f6d5` feat: translated citizen copies + English official drafts — made official documents (complaint, RTI, appeals, letters) always English, added the `POST /api/cases/:id/translate` endpoint and "explainer" document type for a faithful, blank-preserving translation of any document into the citizen's language.
+- `d119fd1` feat: Hindi interface, printable case file, stricter complaint checks — built `public/i18n.js`, wired an English/हिन्दी toggle into the whole UI, added the "Print full case file" view, and tightened the complaint checklist (PIN code, 450-word cap).
+- `eca6cd2` chore: ignore server_out.log / server_err.log — housekeeping while running a live background server for end-to-end testing.
+- `80927c1` feat: explain-a-notice mode + log/stamp polish — added the "Explain a notice I received" photo-only intake mode (reads a notice, explains sender/demand/deadline/consequences without guessing), plus safe-markdown rendering of the agent's log messages and a stamp/case-cover layout fix found during live testing.
+
+Each of these was driven by a plain-English task description, implemented end to end by Cline (reading the relevant files, writing the diffs, checking types, running the test suite, fixing anything it broke), then reviewed and committed.
 
 ## Challenges
 - **Hallucinated authorities are dangerous.** A wrong helpline wastes a poor person's day. We moved every fact the model might invent (offices, portals, helplines, laws, deadlines) into tools backed by curated data and code.
