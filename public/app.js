@@ -302,6 +302,9 @@ async function openCase(id) {
   $("#case").hidden = false;
   $("#log").innerHTML = "";
   $("#stamp").hidden = true;
+  toolStepCount = 0;
+  liveTimers.forEach((id) => clearInterval(id));
+  liveTimers.clear();
   history.replaceState(null, "", `#${id}`);
   await refresh();
   state.es = new EventSource(`/api/cases/${encodeURIComponent(id)}/events`);
@@ -323,6 +326,7 @@ async function refresh() {
   renderTabs(c);
   if (!state.editing) renderPanel(c);
   $("#followForm").hidden = c.running;
+  updateLogMeta();
 }
 
 // ---------- agent log ----------
@@ -336,6 +340,48 @@ const TOOL_TEXT = {
   finalize_case: () => "Publishing your case summary",
   submit_second_opinion: () => "Submitting the second opinion",
 };
+
+// Small stamp/paper-style inline SVG icons, one per tool — mirrors the case-file theme
+// (building, scales, typewriter, magnifier+checklist, calendar, stamp, folder, senior seal).
+const TOOL_ICONS = {
+  find_authorities: '<svg viewBox="0 0 24 24"><path d="M4 21V9l8-5 8 5v12h-5v-6h-6v6H4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  lookup_law: '<svg viewBox="0 0 24 24"><path d="M12 4v16M5 7l-3 5a3 3 0 0 0 6 0l-3-5Zm14 0-3 5a3 3 0 0 0 6 0l-3-5ZM5 7h14M9 20h6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  write_document: '<svg viewBox="0 0 24 24"><path d="M4 20h16M6 16.5V20h3.5L19 10.5l-3.5-3.5L6 16.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  review_draft: '<svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m14.2 14.2 5 5M7.5 10l1.8 1.8L12.5 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+  compute_deadlines: '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 9h16M8 3v4M16 3v4M8 13h2M12 13h2M16 13h0M8 17h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  finalize_case: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m8.5 12 2.3 2.3L15.5 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  read_case_file: '<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  submit_second_opinion: '<svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 13c-4 0-6 2-6 4.5V19h12v-1.5c0-2.5-2-4.5-6-4.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+};
+const DEFAULT_TOOL_ICON = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
+
+// Live "x.x s" elapsed timers for in-flight tool rows, ticked every 100ms.
+const liveTimers = new Map();
+function startLiveTimer(li) {
+  const start = performance.now();
+  li.dataset.startedAt = String(start);
+  const timerEl = li.querySelector(".elapsed");
+  const id = setInterval(() => {
+    if (!timerEl.isConnected) { clearInterval(id); liveTimers.delete(li); return; }
+    timerEl.textContent = `${((performance.now() - start) / 1000).toFixed(1)}s`;
+  }, 100);
+  liveTimers.set(li, id);
+}
+function stopLiveTimer(li) {
+  const id = liveTimers.get(li);
+  if (id) { clearInterval(id); liveTimers.delete(li); }
+  const timerEl = li.querySelector(".elapsed");
+  const start = Number(li.dataset.startedAt || 0);
+  if (timerEl && start) timerEl.textContent = `${((performance.now() - start) / 1000).toFixed(1)}s`;
+}
+
+let toolStepCount = 0;
+function updateLogMeta() {
+  const meta = $("#logMeta");
+  if (!meta || !state.data) return;
+  const model = state.data.mode === "demo" ? "Offline demo model" : state.data.model;
+  meta.textContent = `Cline SDK agent · ${model} · ${toolStepCount} step${toolStepCount === 1 ? "" : "s"}`;
+}
 
 function toolDetail(tool, out) {
   if (!out) return "";
@@ -352,20 +398,41 @@ function toolDetail(tool, out) {
 function onEvent(ev) {
   const log = $("#log");
   const li = document.createElement("li");
-  const reviewerPrefix = ev.source === "reviewer" ? `<span class="muted" style="font-size:12px">Senior reviewer · </span>` : "";
+  const isReviewer = ev.source === "reviewer";
+  const agentBadge = `<span class="agent-badge ${isReviewer ? "reviewer" : "caseworker"}">${isReviewer ? t("agent_badge_reviewer") : t("agent_badge_caseworker")}</span>`;
+  const reviewerPrefix = isReviewer ? `<span class="muted" style="font-size:12px">${esc(t("agent_badge_reviewer"))} · </span>` : "";
   if (ev.kind === "tool-start") {
-    li.className = ev.source === "reviewer" ? "tool running reviewer" : "tool running";
+    toolStepCount += 1;
+    updateLogMeta();
+    li.className = isReviewer ? "tool running reviewer" : "tool running";
     li.dataset.tool = ev.tool;
     li.dataset.source = ev.source || "";
-    li.innerHTML = `${reviewerPrefix}${esc((TOOL_TEXT[ev.tool] || (() => ev.tool))(ev.input))}<span class="detail"></span>`;
+    if (ev.tool === "review_draft" && ev.input?.doc_id) li.dataset.docId = ev.input.doc_id;
+    const icon = TOOL_ICONS[ev.tool] || DEFAULT_TOOL_ICON;
+    li.innerHTML = `<span class="tool-icon">${icon}</span><span class="tool-body">${agentBadge}<span class="tool-text">${esc((TOOL_TEXT[ev.tool] || (() => ev.tool))(ev.input))}</span><span class="elapsed"></span><span class="detail"></span><span class="progress-line"></span></span>`;
+    log.appendChild(li);
+    log.scrollTop = log.scrollHeight;
+    startLiveTimer(li);
+    return;
   } else if (ev.kind === "tool-end") {
     const open = [...log.querySelectorAll(`li.running[data-tool="${ev.tool}"][data-source="${ev.source || ""}"]`)].pop();
     if (open) {
       open.classList.remove("running");
-      if (ev.tool === "review_draft") open.classList.add(ev.output?.ok ? "pass" : "fail");
+      stopLiveTimer(open);
+      if (ev.tool === "review_draft") {
+        open.classList.add(ev.output?.ok ? "pass" : "fail");
+        if (!ev.output?.ok) open.classList.add("glow-fail");
+      }
       const d = open.querySelector(".detail");
       d.textContent = toolDetail(ev.tool, ev.output);
       if (ev.tool === "review_draft" && !ev.output?.ok) d.classList.add("bad");
+      if (ev.tool === "review_draft" && ev.output?.ok) {
+        // A rewrite that now passes, after an earlier failed check on the same document, shows as "fixed".
+        const docId = ev.input?.doc_id;
+        const failedBefore = docId && [...log.querySelectorAll('li[data-tool="review_draft"].fail')].some((x) => x !== open && x.dataset.docId === docId);
+        if (failedBefore) open.classList.add("fixed");
+      }
+      if (ev.tool === "review_draft" && ev.input?.doc_id) open.dataset.docId = ev.input.doc_id;
     }
     if (ev.tool === "submit_second_opinion") refresh();
     scheduleRefresh();
@@ -501,10 +568,24 @@ function renderPanel(c) {
   if (doc) return renderDoc(panel, c, doc);
 }
 
+// Loading state: a blank letterhead sheet with a "typing" caret and shimmering ruled lines,
+// used while the caseworker is still drafting (instead of a plain "please wait" paragraph).
+function skeletonSheet(caption) {
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  return `<div class="sheet sheet-skeleton${reduceMotion ? " static" : ""}">
+    <div class="sk-line sk-head"></div>
+    <div class="sk-line"></div>
+    <div class="sk-line"></div>
+    <div class="sk-line short"></div>
+    <div class="sk-caret" aria-hidden="true"></div>
+    <p class="muted sk-caption">${esc(caption)}</p>
+  </div>`;
+}
+
 function renderSummary(panel, c) {
   if (!c.summary_for_citizen) {
     panel.innerHTML = c.running
-      ? `<p class="muted">${esc(t("summary_researching"))}</p>`
+      ? skeletonSheet(t("summary_researching"))
       : `<p class="muted">${esc(t("summary_none"))} ${c.status === "failed" ? esc(t("summary_failed_hint")) : ""}</p>`;
     return;
   }
@@ -537,8 +618,18 @@ function secondOpinionCard(c) {
   if (!o) return "";
   const cls = o.verdict === "ready" ? "ready" : "fix";
   const verdictLabel = o.verdict === "ready" ? t("second_opinion_ready") : t("second_opinion_fix_first");
+  const pct = Math.max(0, Math.min(10, Number(o.score) || 0)) / 10;
+  const r = 26, circ = 2 * Math.PI * r;
   return `<div class="second-opinion ${cls}">
-    <div class="so-head"><strong>${esc(t("second_opinion_title"))}</strong><span class="so-verdict ${cls}">${esc(verdictLabel)}</span><span class="so-score">${esc(String(o.score))}/10</span></div>
+    <div class="so-head">
+      <svg class="so-ring so-ring-${cls}" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">
+        <circle cx="32" cy="32" r="${r}" class="so-ring-track" fill="none" stroke-width="6" />
+        <circle cx="32" cy="32" r="${r}" class="so-ring-fill" fill="none" stroke-width="6" stroke-linecap="round"
+          stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${(circ * (1 - pct)).toFixed(1)}" transform="rotate(-90 32 32)" />
+        <text x="32" y="37" text-anchor="middle" class="so-ring-text">${esc(String(o.score))}</text>
+      </svg>
+      <div class="so-head-text"><strong>${esc(t("second_opinion_title"))}</strong><span class="so-verdict ${cls}">${esc(verdictLabel)}</span></div>
+    </div>
     <ul class="so-points">${o.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>
   </div>`;
 }
@@ -600,7 +691,7 @@ function renderDoc(panel, c, doc) {
       <span class="spacer"></span><span class="muted" style="font-size:13px">To: ${esc(doc.addressed_to)}</span>
     </div>
     ${reviewHtml}
-    ${editing ? `<textarea class="sheet-edit" id="docEditor" spellcheck="true">${esc(doc.content)}</textarea>` : `<div class="sheet">${md(doc.content)}</div>`}`;
+    ${editing ? `<textarea class="sheet-edit" id="docEditor" spellcheck="true">${esc(doc.content)}</textarea>` : `<div class="sheet sheet-letterhead"><div class="sheet-letterhead-head"><span class="sheet-ref">${esc(c.id)}</span><span class="sheet-to">To: ${esc(doc.addressed_to)}</span></div>${md(doc.content)}</div>`}`;
   if (editing) {
     $("#saveDoc").onclick = async () => {
       const content = $("#docEditor").value;
@@ -624,12 +715,40 @@ function renderDoc(panel, c, doc) {
 }
 const plain = (s) => s.replace(/\*\*(.+?)\*\*/g, "$1");
 
+// Horizontal pin timeline: filing date (if any) -> each deadline, pinned proportionally
+// between the earliest and latest date, with a "today" marker. Purely visual — the real
+// day-count logic stays in deadlines.ts / the daysLeft values computed server-side.
+function deadlinesTimeline(ds, filedAt) {
+  if (!ds.length) return "";
+  const toTime = (s) => new Date(`${s}T00:00:00`).getTime();
+  const todayStr = todayISO();
+  const points = [...(filedAt ? [{ date: filedAt, label: t("filed_on"), kind: "filed" }] : []), ...ds];
+  const times = points.map((p) => toTime(p.date)).concat([toTime(todayStr)]);
+  const min = Math.min(...times), max = Math.max(...times);
+  const span = Math.max(1, max - min);
+  const pct = (d) => ((toTime(d) - min) / span) * 100;
+  const pins = points.map((p) => {
+    const overdue = typeof p.daysLeft === "number" && p.daysLeft < 0 && p.kind !== "filed";
+    const cls = p.kind === "filed" ? "filed" : overdue ? "over" : "";
+    return `<span class="tl-pin ${cls}" style="left:${pct(p.date).toFixed(1)}%" title="${esc(p.label)} — ${esc(p.date)}">
+      <span class="tl-pin-dot"></span><span class="tl-pin-label">${esc(p.label)}</span>
+    </span>`;
+  }).join("");
+  return `<div class="deadlines-timeline" role="img" aria-label="Case timeline from filing to deadlines">
+    <div class="tl-line"></div>
+    <span class="tl-pin today" style="left:${pct(todayStr).toFixed(1)}%" title="${esc(t("deadlines_today"))}"><span class="tl-pin-dot"></span><span class="tl-pin-label">${esc(t("deadlines_today"))}</span></span>
+    ${pins}
+  </div>`;
+}
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
 function renderDeadlines(panel, c) {
   const ds = c.deadlines || [];
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayISO();
   const overdue = ds.some((d) => d.daysLeft < 0 && /rti_reply|bank_reply|cpgrams/.test(d.kind));
   panel.innerHTML = `
     <h4>${c.filedAt ? `${esc(t("filed_on"))} ${esc(c.filedAt)}` : esc(t("if_filed_today"))}</h4>
+    ${deadlinesTimeline(ds, c.filedAt)}
     ${ds.length ? `<ul class="deadlines">${ds.map((d) => {
       const cls = d.daysLeft < 0 ? "over" : d.daysLeft <= 5 ? "soon" : "";
       const left = d.daysLeft < 0 ? `${-d.daysLeft} days ago` : d.daysLeft === 0 ? "today" : `${d.daysLeft} days left`;
