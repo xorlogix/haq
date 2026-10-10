@@ -46,13 +46,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .model-badge {
   font-size: 13px; padding: 4px 10px; border-radius: 999px;
   background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); white-space: nowrap;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis;
 }
 .model-badge.demo { background: rgba(242,169,0,.18); border-color: rgba(242,169,0,.6); }
 
 /* Interface language toggle (English/Hindi chrome only) */
-.ui-lang-toggle { display: inline-flex; gap: 2px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 2px; }
+.ui-lang-toggle { display: inline-flex; gap: 2px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 2px; flex-shrink: 0; }
 .ui-lang-btn { border: 0; background: transparent; color: #fff; font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 999px; cursor: pointer; opacity: .75; }
 .ui-lang-btn[aria-pressed="true"] { background: #fff; color: var(--ink); opacity: 1; }
+/* Narrow phones: badge and toggle each take a full row instead of being squeezed next to the brand. */
+@media (max-width: 420px) {
+  .top { gap: 10px; }
+  .brand-tag { flex-basis: 100%; min-width: 0; order: 3; }
+  .model-badge { order: 4; flex-basis: 100%; white-space: normal; overflow: visible; text-overflow: clip; }
+}
 
 /* Layout */
 .layout {
