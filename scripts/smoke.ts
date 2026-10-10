@@ -2,8 +2,7 @@
 export {};
 process.env.HAQ_DATA_DIR = process.env.HAQ_DATA_DIR ?? "data-test";
 const { createCase, loadCase, newCaseId, readDocument } = await import("../server/cases/store.js");
-const { startCase, followUp, isRunning, modelLabel } = await import("../server/agent/caseworker.js");
-const { MODEL_CONFIG } = await import("../server/config.js");
+const { startCase, followUp, isRunning, modelLabel, currentCredentials } = await import("../server/agent/caseworker.js");
 
 const wait = async (id: string) => { while (isRunning(id)) await new Promise((r) => setTimeout(r, 200)); };
 const scenarios = [
@@ -14,7 +13,7 @@ let failed = 0;
 console.log("Model:", modelLabel());
 for (const s of scenarios) {
   const id = newCaseId();
-  createCase({ id, mode: MODEL_CONFIG.mode, model: modelLabel(), input: { ...s, hasImage: false } });
+  createCase({ id, mode: currentCredentials().mode, model: modelLabel(), input: { ...s, hasImage: false } });
   await new Promise((r) => setTimeout(r, 10));
   startCase(id, s);
   await new Promise((r) => setTimeout(r, 50));

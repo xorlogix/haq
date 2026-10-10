@@ -128,13 +128,19 @@ haq/
 ```bash
 git clone <this repo> haq && cd haq
 npm install
-cp .env.example .env        # optional: add CLINE_API_KEY for live AI
 npm start                   # → http://localhost:3000
 npm test                    # optional: end-to-end smoke test
 ```
 
-- **No key?** It runs on the offline demo model straight away.
-- **Live AI:** set `CLINE_API_KEY` (from your Cline account) in `.env`. You can change the model with `HAQ_PROVIDER` / `HAQ_MODEL`, e.g. `cline-pass` + `cline-pass/glm-5.3`.
+Haq picks its credentials in this order, no `.env` required if you're already signed into Cline:
+
+1. **`HAQ_API_KEY` / `CLINE_API_KEY`** (or `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY` for other providers) — copy `.env.example` to `.env` and set one if you want to pin a specific key.
+2. **The Cline account this machine is already signed into** — if you've signed into the Cline app/extension on this machine, Haq reuses that sign-in automatically for the `cline` and `cline-pass` providers. Zero config for judges and teammates: just `npm install && npm start`.
+3. **The offline demo model** — if neither of the above is available (or `HAQ_MODE=demo` is set), Haq falls back to the scripted offline model. The real agent loop and tools still run; only the LLM is replaced.
+
+The credential source actually in use (env key / signed-in Cline account / offline demo) is printed on startup and returned by `GET /api/status` — never the token itself. The token is re-resolved every time a case's agent is created, so a sign-in completed or refreshed after Haq started is picked up without a restart.
+
+- **Change the model:** `HAQ_PROVIDER` / `HAQ_MODEL`, e.g. `cline-pass` + `cline-pass/glm-5.3`.
 - **Voice input** works in Chrome/Edge (desktop and Android). Use `localhost` or HTTPS so the browser allows the microphone.
 
 ## How Cline was used

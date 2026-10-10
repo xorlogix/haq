@@ -1,7 +1,8 @@
 import express from "express";
-import { MODEL_CONFIG, PORT, PUBLIC_DIR } from "./config.js";
+import { PORT, PUBLIC_DIR } from "./config.js";
 import { createCase, listCases, loadCase, newCaseId, readDocument, saveImage, subscribe, updateCase, writeDocument, pushTrace } from "./cases/store.js";
-import { startCase, followUp, isRunning, modelLabel } from "./agent/caseworker.js";
+import { startCase, followUp, isRunning, modelLabel, currentCredentials } from "./agent/caseworker.js";
+import { credentialSourceLabel } from "./agent/credentials.js";
 import { computeDeadlines, daysUntil, todayIST } from "./deadlines.js";
 import { reviewDraft } from "./agent/review.js";
 import { listCategories } from "./kb/index.js";
@@ -11,7 +12,14 @@ app.use(express.json({ limit: "12mb" }));
 app.use(express.static(PUBLIC_DIR));
 
 app.get("/api/status", (_req, res) => {
-  res.json({ mode: MODEL_CONFIG.mode, model: modelLabel(), today: todayIST(), categories: listCategories() });
+  const creds = currentCredentials();
+  res.json({
+    mode: creds.mode,
+    model: modelLabel(),
+    credentialSource: credentialSourceLabel(creds.source),
+    today: todayIST(),
+    categories: listCategories(),
+  });
 });
 
 app.post("/api/cases", (req, res) => {
@@ -22,7 +30,7 @@ app.post("/api/cases", (req, res) => {
   const id = newCaseId();
   createCase({
     id,
-    mode: MODEL_CONFIG.mode,
+    mode: currentCredentials().mode,
     model: modelLabel(),
     input: { text: text.trim().slice(0, 4000), language: language ?? "", state, city, hasImage: !!imageDataUrl, contactName },
   });
@@ -144,7 +152,13 @@ app.put("/api/cases/:id/documents/:docId", (req, res) => {
 });
 
 app.listen(PORT, () => {
+  const creds = currentCredentials();
   console.log(`\n  हक़  Haq is running →  http://localhost:${PORT}`);
   console.log(`  Caseworker model: ${modelLabel()}`);
-  if (MODEL_CONFIG.mode === "demo") console.log("  (No API key found — running the offline demo model. Set CLINE_API_KEY in .env for live AI.)\n");
+  console.log(`  Credential source: ${credentialSourceLabel(creds.source)}`);
+  if (creds.mode === "demo") {
+    console.log(
+      "  (No API key and no signed-in Cline account found — running the offline demo model. Set CLINE_API_KEY in .env, or sign in to Cline on this machine, for live AI.)\n",
+    );
+  }
 });

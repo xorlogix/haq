@@ -5,14 +5,23 @@ import { loadCase, loadMessages, pushTrace, saveMessages, updateCase } from "../
 import { buildCaseTools } from "./tools.js";
 import { systemPrompt } from "./prompt.js";
 import { createDemoModel } from "./demoModel.js";
+import { credentialSourceLabel, resolveCredentials } from "./credentials.js";
 
 type AgentInstance = InstanceType<typeof Agent>;
 
 const agents = new Map<string, AgentInstance>();
 const running = new Set<string>();
 
+/** Current effective mode/source — resolved fresh whenever an agent is created, exposed for /api/status. */
+export function currentCredentials() {
+  return resolveCredentials();
+}
+
 export function modelLabel(): string {
-  return MODEL_CONFIG.mode === "demo" ? "Offline demo (scripted model)" : `${MODEL_CONFIG.providerId} · ${MODEL_CONFIG.modelId}`;
+  const creds = resolveCredentials();
+  return creds.mode === "demo"
+    ? "Offline demo (scripted model)"
+    : `${MODEL_CONFIG.providerId} · ${MODEL_CONFIG.modelId} (${credentialSourceLabel(creds.source)})`;
 }
 
 function createAgent(caseId: string): AgentInstance {
@@ -23,14 +32,17 @@ function createAgent(caseId: string): AgentInstance {
     toolExecution: "sequential" as const,
     clientName: "haq",
   };
+  // Resolved fresh for every agent — not cached at startup — so a Cline sign-in
+  // token refreshed mid-session (or a sign-in completed after boot) is picked up.
+  const creds = resolveCredentials();
   const agent =
-    MODEL_CONFIG.mode === "demo"
+    creds.mode === "demo"
       ? new Agent({ ...common, model: createDemoModel(caseId) })
       : new Agent({
           ...common,
           providerId: MODEL_CONFIG.providerId,
           modelId: MODEL_CONFIG.modelId,
-          apiKey: MODEL_CONFIG.apiKey,
+          apiKey: creds.apiKey,
           baseUrl: MODEL_CONFIG.baseUrl,
         });
 
