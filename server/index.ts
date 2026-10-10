@@ -5,11 +5,15 @@ import { startCase, followUp, isRunning, modelLabel, currentCredentials } from "
 import { credentialSourceLabel } from "./agent/credentials.js";
 import { APPEAL_TRACKS, computeDeadlinesFromBases, daysUntil, todayIST } from "./deadlines.js";
 import { reviewDraft } from "./agent/review.js";
-import { listCategories } from "./kb/index.js";
+import { listCategories, allAuthorities, allProvisions } from "./kb/index.js";
 
 const app = express();
 app.use(express.json({ limit: "12mb" }));
 app.use(express.static(PUBLIC_DIR));
+
+// Kept in sync with the <select id="lang"> options in public/index.html — the proof-strip
+// "languages supported" count must reflect what a citizen can actually pick, not a guess.
+const SUPPORTED_LANGUAGES = 11;
 
 app.get("/api/status", (_req, res) => {
   const creds = currentCredentials();
@@ -19,6 +23,12 @@ app.get("/api/status", (_req, res) => {
     credentialSource: credentialSourceLabel(creds.source),
     today: todayIST(),
     categories: listCategories(),
+    stats: {
+      authorities: allAuthorities().length,
+      laws: allProvisions().length,
+      languages: SUPPORTED_LANGUAGES,
+      agents: 2,
+    },
   });
 });
 

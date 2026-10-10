@@ -36,7 +36,136 @@ async function loadStatus() {
     b.textContent = s.mode === "demo" ? "Offline demo model" : `Cline SDK · ${s.model.split("·").pop().trim()}`;
     b.classList.toggle("demo", s.mode === "demo");
     b.title = s.mode === "demo" ? "No API key configured: the Cline agent loop and tools are real, the model is scripted." : `Caseworker runs on the Cline SDK with ${s.model}`;
+    if (s.stats) animateProofStrip(s.stats);
   } catch { $("#modelBadge").textContent = "offline"; }
+}
+
+// ---------- proof strip: count up real numbers from /api/status on first view ----------
+function animateProofStrip(stats) {
+  const targets = { proofAuthorities: stats.authorities, proofLaws: stats.laws, proofLanguages: stats.languages, proofAgents: stats.agents };
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  Object.entries(targets).forEach(([id, target]) => {
+    const el = document.getElementById(id);
+    if (!el || typeof target !== "number") return;
+    el.dataset.target = String(target);
+    if (reduceMotion) { el.textContent = String(target); return; }
+    const duration = 900;
+    const start = performance.now();
+    const step = (now) => {
+      const p = Math.min(1, (now - start) / duration);
+      el.textContent = String(Math.round(target * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+// ---------- hero: CTA scrolling + self-playing case-file vignette ----------
+$("#heroOpenCase")?.addEventListener("click", () => {
+  $("#problem")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  setTimeout(() => $("#problem")?.focus(), 350);
+});
+$("#heroHowItWorks")?.addEventListener("click", () => {
+  $("#howItWorks")?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+(function runVignette() {
+  const folder = $("#vigFolder") || document.querySelector(".vig-folder");
+  const linesEl = $("#vigLetterLines");
+  const checklistItems = Array.from(document.querySelectorAll("#vigChecklist li"));
+  if (!folder || !linesEl) return;
+  const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) {
+    folder.classList.add("open", "stamped");
+    linesEl.textContent = "To, The Public Information Officer…\nSubject: Application under Section 6(1)…";
+    checklistItems.forEach((li) => li.classList.add("ticked"));
+    return;
+  }
+  const LINES = ["To, The Public Information Officer,", "Subject: Application under Section 6(1)…", "I request the following information:"];
+  let cancelled = false;
+  async function typeLines() {
+    linesEl.textContent = "";
+    for (const line of LINES) {
+      for (let i = 0; i <= line.length; i++) {
+        if (cancelled) return;
+        linesEl.textContent = LINES.slice(0, LINES.indexOf(line)).join("\n") + (LINES.indexOf(line) ? "\n" : "") + line.slice(0, i);
+        await sleep(18);
+      }
+      linesEl.textContent += "\n";
+    }
+  }
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function cycle() {
+    while (!cancelled) {
+      folder.classList.remove("open", "stamped");
+      checklistItems.forEach((li) => li.classList.remove("ticked"));
+      linesEl.textContent = "";
+      await sleep(600);
+      folder.classList.add("open");
+      await sleep(500);
+      await typeLines();
+      for (const li of checklistItems) {
+        await sleep(300);
+        li.classList.add("ticked");
+      }
+      await sleep(400);
+      folder.classList.add("stamped");
+      await sleep(2800);
+    }
+  }
+  cycle();
+  document.addEventListener("visibilitychange", () => { cancelled = document.hidden ? cancelled : cancelled; });
+})();
+
+// ---------- mic waveform: live amplitude bars while listening (Web Audio AnalyserNode) ----------
+function attachMicWaveform(button, waveEl) {
+  if (!waveEl) return;
+  const BAR_COUNT = 5;
+  for (let i = 0; i < BAR_COUNT; i++) {
+    const bar = document.createElement("span");
+    bar.style.height = "3px";
+    waveEl.appendChild(bar);
+  }
+  const bars = Array.from(waveEl.children);
+  let audioCtx = null, analyser = null, source = null, stream = null, raf = null;
+  async function start() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const draw = () => {
+        analyser.getByteFrequencyData(data);
+        bars.forEach((bar, i) => {
+          const v = data[i * 2] || 0;
+          bar.style.height = `${Math.max(3, Math.min(18, (v / 255) * 18))}px`;
+        });
+        raf = requestAnimationFrame(draw);
+      };
+      draw();
+    } catch {
+      // Permission denied or unsupported — fall back to a static mic icon, no waveform.
+    }
+  }
+  function stop() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = null;
+    stream?.getTracks().forEach((tr) => tr.stop());
+    source?.disconnect();
+    audioCtx?.close().catch(() => {});
+    stream = audioCtx = analyser = source = null;
+    bars.forEach((bar) => { bar.style.height = "3px"; });
+  }
+  button.addEventListener("click", () => {
+    // Mirror the button's own aria-pressed toggle set by attachMic() above.
+    setTimeout(() => {
+      if (button.getAttribute("aria-pressed") === "true") start();
+      else stop();
+    }, 0);
+  });
 }
 
 function statusPill(c) {
@@ -87,6 +216,7 @@ function attachMic(button, field, getLang, labelEl) {
 }
 attachMic($("#micBtn"), $("#problem"), () => $("#lang").value, $("#micLabel"));
 attachMic($("#followMic"), $("#followText"), () => LANG_CODES[(state.data?.user_language || "").toLowerCase()] || $("#lang").value);
+attachMicWaveform($("#micBtn"), $("#micWave"));
 
 // ---------- intake mode: "Describe a problem" / "Explain a notice I received" ----------
 let intakeMode = "problem";

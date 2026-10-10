@@ -23,7 +23,92 @@
       <button type="button" class="ui-lang-btn" id="uiLangHi" data-lang="hi" aria-pressed="false">हिन्दी</button>
     </div>
     <span id="modelBadge" class="model-badge" title="Model running the Cline SDK caseworker">…</span>
+    <a class="cline-pill" href="https://cline.bot" target="_blank" rel="noopener" data-i18n="built_with_cline">Built with Cline</a>
   </header>
+
+  <section class="hero" aria-labelledby="heroTitle">
+    <svg class="hero-noise" aria-hidden="true" width="0" height="0">
+      <filter id="paperNoise" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch" result="noise" />
+        <feColorMatrix in="noise" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.03 0" />
+      </filter>
+      <rect width="100%" height="100%" filter="url(#paperNoise)" />
+    </svg>
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <h1 id="heroTitle">
+          <span data-i18n="hero_line_en">Your right. In your language.</span>
+          <span class="hi" lang="hi" data-i18n="hero_line_hi">आपका हक़, आपकी भाषा में।</span>
+        </h1>
+        <p class="hero-sub" data-i18n="hero_sub">Speak your problem. Haq finds the office responsible, drafts the complaint and RTI, checks them, and tracks the deadline.</p>
+        <div class="hero-actions">
+          <button type="button" class="primary hero-cta" id="heroOpenCase" data-i18n="open_my_case">Open my case</button>
+          <button type="button" class="ghost hero-cta-secondary" id="heroHowItWorks" data-i18n="see_how">See how it works</button>
+        </div>
+      </div>
+      <div class="hero-vignette" id="heroVignette" aria-hidden="true">
+        <div class="vig-folder">
+          <div class="vig-tape" id="vigTape"></div>
+          <div class="vig-cover vig-cover-back"></div>
+          <div class="vig-letter" id="vigLetter">
+            <div class="vig-letter-lines" id="vigLetterLines"></div>
+            <ul class="vig-checklist" id="vigChecklist">
+              <li data-i18n="check_authority">Correct authority identified</li>
+              <li data-i18n="check_law">Law section cited</li>
+              <li data-i18n="check_checklist">Filing checklist passed</li>
+            </ul>
+          </div>
+          <div class="vig-cover vig-cover-front"></div>
+          <div class="vig-stamp" id="vigStamp"><span>FILED<br /><span lang="hi">दर्ज</span></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="proof-strip" aria-label="Haq by the numbers">
+    <div class="proof-item">
+      <span class="proof-num" id="proofAuthorities" data-target="0">0</span>
+      <span class="proof-label" data-i18n="proof_authorities">Authorities in the directory</span>
+    </div>
+    <div class="proof-item">
+      <span class="proof-num" id="proofLaws" data-target="0">0</span>
+      <span class="proof-label" data-i18n="proof_laws">Laws &amp; provisions grounded</span>
+    </div>
+    <div class="proof-item">
+      <span class="proof-num" id="proofLanguages" data-target="0">0</span>
+      <span class="proof-label" data-i18n="proof_languages">Indian languages supported</span>
+    </div>
+    <div class="proof-item">
+      <span class="proof-num" id="proofAgents" data-target="0">0</span>
+      <span class="proof-label" data-i18n="proof_agents">Cline SDK agents</span>
+    </div>
+  </section>
+
+  <section class="how-it-works" id="howItWorks" aria-labelledby="howTitle">
+    <h2 id="howTitle" data-i18n="how_title">How Haq works</h2>
+    <ol class="how-steps">
+      <li class="how-step">
+        <span class="how-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 14a6 6 0 0 1 6 6v6a6 6 0 0 1-12 0v-6a6 6 0 0 1 6-6Zm9 12a9 9 0 0 1-18 0" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 35v4" stroke="currentColor" stroke-width="2"/></svg></span>
+        <h3 data-i18n="how_1_title">Speak</h3>
+        <p data-i18n="how_1_body">Say or type your problem in your own language.</p>
+      </li>
+      <li class="how-step">
+        <span class="how-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="9" y="8" width="30" height="34" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 17h18M15 24h18M15 31h11" stroke="currentColor" stroke-width="2"/><circle cx="33" cy="33" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="m37 37 4 4" stroke="currentColor" stroke-width="2"/></svg></span>
+        <h3 data-i18n="how_2_title">Agent researches</h3>
+        <p data-i18n="how_2_body">Finds the responsible office and the law that applies.</p>
+      </li>
+      <li class="how-step">
+        <span class="how-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="10" y="7" width="28" height="34" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 23 5 5 11-13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 33h16" stroke="currentColor" stroke-width="2"/></svg></span>
+        <h3 data-i18n="how_3_title">Draft checked</h3>
+        <p data-i18n="how_3_body">Every draft is checked against a filing checklist.</p>
+      </li>
+      <li class="how-step">
+        <span class="how-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="25" r="16" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 15v10l7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M24 6v4M14 9l2 3M34 9l-2 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        <h3 data-i18n="how_4_title">Deadlines tracked</h3>
+        <p data-i18n="how_4_body">Haq counts the days and drafts your appeal if there's no reply.</p>
+      </li>
+    </ol>
+  </section>
 
   <main class="layout">
     <!-- Intake -->
@@ -43,6 +128,7 @@
             placeholder="e.g. मेरे घर के सामने सड़क पर बड़ा गड्ढा है, 3 हफ़्ते से — कल एक स्कूटर वाला गिर गया।"></textarea>
           <button type="button" id="micBtn" class="mic" aria-pressed="false" aria-label="Speak your problem">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg>
+            <span class="mic-wave" id="micWave" aria-hidden="true"></span>
             <span id="micLabel" data-i18n="speak">Speak</span>
           </button>
         </div>
