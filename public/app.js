@@ -100,7 +100,8 @@ $("#heroHowItWorks")?.addEventListener("click", () => {
       folder.classList.remove("open", "stamped");
       checklistItems.forEach((li) => li.classList.remove("ticked"));
       linesEl.textContent = "";
-      await sleep(600);
+      // Hold the closed folder, red tape clearly visible, for ~1.5s before it opens.
+      await sleep(1500);
       folder.classList.add("open");
       await sleep(500);
       await typeLines();

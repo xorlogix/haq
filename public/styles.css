@@ -69,7 +69,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
   align-items: center; padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 40px);
 }
 @media (max-width: 1180px) { .hero-inner { grid-template-columns: minmax(0, 1fr) minmax(280px, 420px); } }
-@media (max-width: 860px) { .hero-inner { grid-template-columns: 1fr; } }
+@media (max-width: 860px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  /* Stacked layout: no text column to protect from, so centre the folder instead of
+     right-aligning it (right-alignment is only needed to share a column with the headline). */
+  .hero-vignette { justify-content: center; }
+  .vig-folder { margin-left: 0; width: min(100%, 448px); }
+}
 .hero-copy, .hero-vignette { min-width: 0; }
 .hero-copy h1 {
   margin: 0 0 18px; font-size: clamp(28px, 3.4vw, 50px); line-height: 1.12; font-weight: 800; letter-spacing: -.01em;
@@ -87,8 +93,14 @@ button.hero-cta-secondary.hero-cta-secondary { background: transparent; color: #
 button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.hero-cta-secondary:focus-visible { background: rgba(255,255,255,.15); color: #fff; }
 
 /* ---------- Hero case-file vignette ---------- */
-.hero-vignette { display: flex; justify-content: center; align-items: center; min-height: 280px; perspective: 900px; padding: 20px; }
-.vig-folder { position: relative; width: min(100%, 448px); aspect-ratio: 4 / 3; filter: drop-shadow(0 20px 36px rgba(0,0,0,.45)); }
+/* overflow: hidden is a safety net: even if a future change makes the opened cover's 3D swing
+   wider than expected, it gets clipped at the vignette column's own boundary instead of
+   crossing into the text column. */
+.hero-vignette { display: flex; justify-content: flex-end; align-items: center; min-height: 280px; perspective: 900px; padding: 20px; overflow: hidden; }
+/* The folder sits in the right half of its column, at ~52% of the column's width, so when
+   .vig-cover-front hinges open on its LEFT edge (rotateY, swinging left) the opened cover lands
+   in the left half of the SAME column — never past the column's own left edge into the headline. */
+.vig-folder { position: relative; width: min(52%, 448px); aspect-ratio: 4 / 3; filter: drop-shadow(0 20px 36px rgba(0,0,0,.45)); margin-left: auto; }
 .vig-folder-tab {
   position: absolute; left: 8%; top: -22px; z-index: 0; background: #d9c088; color: #5b4a1a;
   font-family: var(--type); font-weight: 700; font-size: 12px; letter-spacing: .06em;
