@@ -136,7 +136,9 @@ button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.he
   background-color: #fdfcf6;
   background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.015) 0 1px, transparent 1px 26px);
   border-radius: 3px; box-shadow: 0 6px 18px rgba(0,0,0,.3);
-  padding: clamp(10px, 3%, 16px); opacity: 0; transform: translateY(10%) rotate(-2deg);
+  /* Extra bottom padding reserves empty space below the checklist for the stamp to land in,
+     so the final frame never has the stamp covering the third checklist line. */
+  padding: clamp(10px, 3%, 16px) clamp(10px, 3%, 16px) clamp(34px, 11%, 46px); opacity: 0; transform: translateY(10%) rotate(-2deg);
   transition: opacity .6s ease, transform .9s cubic-bezier(.3,.6,.2,1);
   overflow: hidden; display: flex; flex-direction: column;
 }
@@ -160,7 +162,7 @@ button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.he
 /* Same rectangular double-border stamp as the case cover, scaled down, slammed onto the
    letter's lower-right corner without covering the checklist above it. */
 .vig-stamp {
-  position: absolute; right: 6%; bottom: 6%; z-index: 4;
+  position: absolute; right: 6%; bottom: 3%; z-index: 4;
   font-family: var(--type); font-weight: 700; font-size: clamp(11px, 2.6vw, 14px); letter-spacing: .06em;
   padding: 4px 10px; border: 3px double var(--stamp); border-radius: 5px;
   color: var(--stamp); text-align: center; line-height: 1.3;
@@ -175,8 +177,14 @@ button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.he
   .vig-cover-front, .vig-tape, .vig-letter, .vig-stamp { transition: none !important; }
 }
 @media (max-width: 420px) {
-  .hero-vignette { padding: 0 16px; min-height: 220px; }
-  .vig-folder { width: 100%; max-width: 280px; }
+  .hero-vignette { padding: 0 16px; min-height: 190px; }
+  /* Shrink further and open to a shallower angle: the front cover hinges on its left edge, so
+     at full -124deg the swung panel's right edge projects past the folder's own left edge by
+     roughly half its width. A smaller box plus a shallower open angle keeps that projection
+     inside the 16px gutter on narrow phones instead of getting clipped by .hero-vignette's
+     overflow: hidden safety net. */
+  .vig-folder { width: min(58vw, 190px); max-width: 190px; }
+  .vig-folder.open .vig-cover-front { transform: rotateY(-98deg); }
 }
 
 /* ---------- Proof strip: one white panel, numbers + a muted caption underneath ---------- */
@@ -269,12 +277,14 @@ button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.he
     linear-gradient(160deg, #e3d4a3, #cdb378),
     repeating-linear-gradient(108deg, rgba(255,255,255,.07) 0 2px, transparent 2px 6px);
 }
-/* Red-tape tie running horizontally across the cover's left edge, below the case-id/model
-   line so it never overlaps any text (title/authority sit further down, outside its band). */
+/* A clearly intentional red-tape ribbon, like a bookmark tag, hanging from the top of the
+   cover's left edge with a pointed (notched) bottom end. Sits over the ink border-left but
+   well above/left of the case-id, title and authority text, so nothing overlaps. */
 .case-cover-tape {
-  position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 22px; height: 9px; background: var(--stamp);
-  background-image: linear-gradient(180deg, rgba(255,255,255,.18), transparent 40%, rgba(0,0,0,.12));
-  box-shadow: 0 0 0 1px rgba(0,0,0,.15); z-index: 0;
+  position: absolute; left: 0; top: 0; width: 28px; height: 68px; background: var(--stamp);
+  background-image: linear-gradient(90deg, rgba(0,0,0,.12), transparent 45%, rgba(255,255,255,.15));
+  box-shadow: 2px 0 6px rgba(0,0,0,.25); z-index: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
 }
 .case-id { background: rgba(255,255,255,.65); padding: 1px 8px; border-radius: 4px; color: var(--ink); }
 
