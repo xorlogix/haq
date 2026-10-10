@@ -455,6 +455,42 @@ Yours faithfully,
 [Your full name]`;
 }
 
+/**
+ * Offline demo for the senior reviewer: a tiny scripted model that calls
+ * read_case_file once, then submits a positive second opinion. Keeps
+ * HAQ_MODE=demo exercising the real reviewer agent loop and real tools.
+ */
+export function createDemoReviewerModel(): AgentModel {
+  return {
+    async *stream(req: AgentModelRequest) {
+      await new Promise((r) => setTimeout(r, 300));
+      const run = parseToolOutputs(req.messages);
+      const caseFile = run.read_case_file?.[0];
+      const lang: string = (caseFile?.user_language as string) || "English";
+      const hi = /hindi/i.test(lang);
+      if (!run.read_case_file) {
+        yield* call("read_case_file", {}, hi ? "केस फ़ाइल पढ़ रहा हूँ। " : "Reading the case file. ");
+        return;
+      }
+      yield* call("submit_second_opinion", {
+        verdict: "ready",
+        score: 8,
+        points: hi
+          ? [
+              "सही विभाग चुना गया लगता है।",
+              "ड्राफ्ट फाइलिंग चेकलिस्ट से पास हैं।",
+              "फाइल करने से पहले अपना पता और तारीख जरूर भरें।",
+            ]
+          : [
+              "The chosen authority looks right for this problem.",
+              "The drafts pass the filing checklist and look acceptable to a government office.",
+              "Fill in your address and the exact date before filing.",
+            ],
+      }, hi ? "जाँच पूरी हुई। " : "Review complete. ");
+    },
+  };
+}
+
 export function createDemoModel(caseRef: string): AgentModel {
   return {
     async *stream(req: AgentModelRequest) {

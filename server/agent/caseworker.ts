@@ -6,6 +6,7 @@ import { buildCaseTools } from "./tools.js";
 import { systemPrompt } from "./prompt.js";
 import { createDemoModel } from "./demoModel.js";
 import { credentialSourceLabel, resolveCredentials } from "./credentials.js";
+import { runSecondOpinion } from "./reviewer.js";
 
 type AgentInstance = InstanceType<typeof Agent>;
 
@@ -144,6 +145,11 @@ async function drive(caseId: string, input: AgentMessage, first: boolean): Promi
       if (r.status === "working") r.status = r.summary_for_citizen ? "ready" : "failed";
     });
     pushTrace(caseId, { kind: "done", text: "Case file ready" });
+    const finalRec = loadCase(caseId);
+    if (finalRec?.summary_for_citizen) {
+      // Independent senior-caseworker second opinion — never blocks or can fail the main case.
+      void runSecondOpinion(caseId).catch(() => {});
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     updateCase(caseId, (r) => {

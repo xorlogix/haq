@@ -28,6 +28,23 @@ for (const s of scenarios) {
   console.log("  summary:", c.summary_for_citizen?.slice(0, 160));
   const err = c.trace.find((t) => t.kind === "error"); if (err) console.log("  ERROR:", err.text);
   if (!ok) failed++;
+
+  // Senior reviewer second opinion runs independently after finalize_case and must never
+  // block the case from being "ready", even if it's still catching up.
+  for (let i = 0; i < 40 && loadCase(id)!.second_opinion_status !== "done"; i++) await new Promise((r) => setTimeout(r, 100));
+  const withOpinion = loadCase(id)!;
+  const opinionOk =
+    withOpinion.status === "ready" &&
+    withOpinion.second_opinion_status === "done" &&
+    !!withOpinion.second_opinion &&
+    ["ready", "fix_first"].includes(withOpinion.second_opinion!.verdict) &&
+    withOpinion.second_opinion!.score >= 1 &&
+    withOpinion.second_opinion!.score <= 10 &&
+    withOpinion.second_opinion!.points.length > 0 &&
+    withOpinion.second_opinion!.points.length <= 5;
+  console.log(`  [${opinionOk ? "PASS" : "FAIL"}] senior reviewer second opinion`, withOpinion.second_opinion);
+  if (!opinionOk) failed++;
+
   if (s === scenarios[0]) {
     // The official RTI draft must be English even though the citizen wrote Hindi — "Get it in my language"
     // only translates a citizen-facing copy, it never changes what gets filed.

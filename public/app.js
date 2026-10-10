@@ -204,6 +204,7 @@ const TOOL_TEXT = {
   review_draft: (i) => `Checking ${i?.doc_id} against the filing checklist`,
   read_case_file: () => "Re-reading the case file",
   finalize_case: () => "Publishing your case summary",
+  submit_second_opinion: () => "Submitting the second opinion",
 };
 
 function toolDetail(tool, out) {
@@ -214,18 +215,21 @@ function toolDetail(tool, out) {
   if (tool === "write_document") return `${out.words} words saved to case folder`;
   if (tool === "review_draft") return out.ok ? `Passed all ${out.checked?.length} checks` : `${out.issues?.length} issue(s): ${out.issues?.join(" ")}`;
   if (tool === "finalize_case") return out.published ? "Dashboard updated" : "";
+  if (tool === "submit_second_opinion") return out.received ? "Opinion recorded" : "";
   return "";
 }
 
 function onEvent(ev) {
   const log = $("#log");
   const li = document.createElement("li");
+  const reviewerPrefix = ev.source === "reviewer" ? `<span class="muted" style="font-size:12px">Senior reviewer · </span>` : "";
   if (ev.kind === "tool-start") {
-    li.className = "tool running";
+    li.className = ev.source === "reviewer" ? "tool running reviewer" : "tool running";
     li.dataset.tool = ev.tool;
-    li.innerHTML = `${esc((TOOL_TEXT[ev.tool] || (() => ev.tool))(ev.input))}<span class="detail"></span>`;
+    li.dataset.source = ev.source || "";
+    li.innerHTML = `${reviewerPrefix}${esc((TOOL_TEXT[ev.tool] || (() => ev.tool))(ev.input))}<span class="detail"></span>`;
   } else if (ev.kind === "tool-end") {
-    const open = [...log.querySelectorAll(`li.running[data-tool="${ev.tool}"]`)].pop();
+    const open = [...log.querySelectorAll(`li.running[data-tool="${ev.tool}"][data-source="${ev.source || ""}"]`)].pop();
     if (open) {
       open.classList.remove("running");
       if (ev.tool === "review_draft") open.classList.add(ev.output?.ok ? "pass" : "fail");
@@ -233,22 +237,23 @@ function onEvent(ev) {
       d.textContent = toolDetail(ev.tool, ev.output);
       if (ev.tool === "review_draft" && !ev.output?.ok) d.classList.add("bad");
     }
+    if (ev.tool === "submit_second_opinion") refresh();
     scheduleRefresh();
     return;
   } else if (ev.kind === "thought") {
     li.className = "thought";
-    li.innerHTML = md(ev.text || "");
+    li.innerHTML = reviewerPrefix + md(ev.text || "");
   } else if (ev.kind === "user") {
     li.className = "user";
     li.textContent = ev.text;
   } else if (ev.kind === "error") {
     li.className = "err";
-    li.textContent = ev.text;
+    li.innerHTML = reviewerPrefix + esc(ev.text || "");
     scheduleRefresh();
   } else if (ev.kind === "status" || ev.kind === "done") {
-    if (ev.kind === "done") loadCases();
+    if (ev.kind === "done") { loadCases(); if (ev.source === "reviewer") refresh(); }
     li.className = "thought";
-    li.textContent = ev.text;
+    li.innerHTML = reviewerPrefix + esc(ev.text || "");
     scheduleRefresh();
   } else {
     scheduleRefresh();
@@ -324,15 +329,30 @@ function renderTabs(c) {
   tabs.push({ id: "summary", label: t("what_to_do") });
   for (const d of c.documents) {
     const mark = d.review ? (d.review.ok ? ` <span class="ok" aria-label="passed checks">✓</span>` : ` <span class="bad" aria-label="has issues">!</span>`) : "";
-    tabs.push({ id: `doc:${d.id}`, label: `${shortTitle(d)}${mark}` });
+    tabs.push({ id: `doc:${d.id}`, label: `${shortTitle(d, c)}${mark}` });
   }
   tabs.push({ id: "deadlines", label: t("deadlines_tab") });
   if (!tabs.some((tab) => tab.id === state.tab)) state.tab = "summary";
   $("#tabs").innerHTML = tabs.map((tab) => `<button class="tab" role="tab" data-tab="${esc(tab.id)}" aria-selected="${tab.id === state.tab}">${tab.label}</button>`).join("");
 }
-function shortTitle(d) {
-  return { complaint: t("doc_complaint"), rti: t("doc_rti"), first_appeal: t("doc_first_appeal"), second_appeal: t("doc_second_appeal"), explainer: t("doc_explainer") }[d.type] || d.title.split("—")[0].trim();
+function shortTitle(d, c) {
+  if (d.type === "explainer") return explainerLabel(d, c);
+  return { complaint: t("doc_complaint"), rti: t("doc_rti"), first_appeal: t("doc_first_appeal"), second_appeal: t("doc_second_appeal") }[d.type] || d.title.split("—")[0].trim();
 }
+
+// An "explainer" is a translation of another document ("<id>_<langcode>") or a standalone
+// notice explanation ("notice_explainer"). Label it "<source title> · <language>" instead of
+// always "Explainer", so a citizen with several translations can tell them apart.
+const DOC_TYPE_LABEL = { complaint: () => t("doc_complaint"), rti: () => t("doc_rti"), first_appeal: () => t("doc_first_appeal"), second_appeal: () => t("doc_second_appeal"), letter: () => t("doc_explainer") };
+function explainerLabel(d, c) {
+  if (d.id === "notice_explainer") return t("doc_explainer");
+  const source = (c?.documents || []).find((o) => o.id !== d.id && d.id.startsWith(`${o.id}_`));
+  const lang = source ? d.id.slice(source.id.length + 1) : "";
+  const sourceLabel = source ? (DOC_TYPE_LABEL[source.type]?.() ?? source.title.split("—")[0].trim()) : t("doc_explainer");
+  const langName = LANG_NAMES[lang] || lang;
+  return source && langName ? `${sourceLabel} · ${langName}` : t("doc_explainer");
+}
+const LANG_NAMES = { hi: "हिन्दी", as: "অসমীয়া", bn: "বাংলা", ta: "தமிழ்", te: "తెలుగు", mr: "मराठी", gu: "ગુજરાતી", kn: "ಕನ್ನಡ", ml: "മലയാളം", pa: "ਪੰਜਾਬੀ", or: "ଓଡ଼ିଆ", ur: "اردو" };
 $("#tabs").addEventListener("click", (e) => {
   const b = e.target.closest("[data-tab]");
   if (!b || !state.data) return;
@@ -360,6 +380,7 @@ function renderSummary(panel, c) {
   }
   const langCode = LANG_CODES[(c.user_language || "").toLowerCase()] || "en-IN";
   panel.innerHTML = `
+    ${secondOpinionCard(c)}
     <div class="toolbar"><button class="secondary" id="speakBtn" type="button">${esc(t("read_aloud"))}</button><span class="spacer"></span>${c.mode === "demo" ? `<span class="muted" style="font-size:13px">Offline demo model</span>` : ""}</div>
     <p class="summary-text" lang="${esc(langCode)}">${esc(c.summary_for_citizen)}</p>
     ${c.primary_authority ? `<h4>${esc(t("who_responsible"))}</h4><p><strong>${esc(c.primary_authority.name)}</strong><br><span class="muted">${esc(c.primary_authority.why)}</span></p>` : ""}
@@ -375,6 +396,21 @@ function renderSummary(panel, c) {
     cb.checked = !!saved[cb.dataset.k];
     cb.addEventListener("change", () => { saved[cb.dataset.k] = cb.checked; try { localStorage.setItem(key, JSON.stringify(saved)); } catch {} });
   });
+}
+
+// ---------- second opinion card ----------
+function secondOpinionCard(c) {
+  if (c.second_opinion_status === "reviewing" && !c.second_opinion) {
+    return `<div class="second-opinion reviewing"><span class="so-dot"></span>${esc(t("second_opinion_reviewing"))}</div>`;
+  }
+  const o = c.second_opinion;
+  if (!o) return "";
+  const cls = o.verdict === "ready" ? "ready" : "fix";
+  const verdictLabel = o.verdict === "ready" ? t("second_opinion_ready") : t("second_opinion_fix_first");
+  return `<div class="second-opinion ${cls}">
+    <div class="so-head"><strong>${esc(t("second_opinion_title"))}</strong><span class="so-verdict ${cls}">${esc(verdictLabel)}</span><span class="so-score">${esc(String(o.score))}/10</span></div>
+    <ul class="so-points">${o.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>
+  </div>`;
 }
 
 function speak(text, lang) {

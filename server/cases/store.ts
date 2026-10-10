@@ -15,6 +15,15 @@ export interface TraceEvent {
   input?: unknown;
   output?: unknown;
   docId?: string;
+  /** Which agent produced this trace line — the main caseworker (default, omitted) or the senior reviewer. */
+  source?: "reviewer";
+}
+
+export interface SecondOpinion {
+  verdict: "ready" | "fix_first";
+  score: number;
+  points: string[];
+  reviewedAt: number;
 }
 
 export interface CaseDocument {
@@ -54,6 +63,9 @@ export interface CaseRecord {
   documents: CaseDocument[];
   trace: TraceEvent[];
   usage?: { inputTokens: number; outputTokens: number };
+  /** Senior-caseworker second opinion, run independently after finalize_case. Never blocks the main case. */
+  second_opinion?: SecondOpinion | null;
+  second_opinion_status?: "reviewing" | "done";
 }
 
 const bus = new EventEmitter();
