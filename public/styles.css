@@ -62,13 +62,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .hero-noise { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .hero-inner {
   position: relative; max-width: 1500px; margin: 0 auto;
-  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, 480px); gap: clamp(24px, 4vw, 56px);
+  /* Text column gets at least ~600px, the vignette column is capped at ~560px, so at
+     1280/1440/1920 the folder graphic can never overlap the headline — it just gets its own
+     column and the headline wraps inside its own. */
+  display: grid; grid-template-columns: minmax(600px, 1fr) minmax(320px, 560px); gap: clamp(24px, 4vw, 56px);
   align-items: center; padding: clamp(24px, 4vw, 48px) clamp(16px, 4vw, 40px);
 }
+@media (max-width: 1180px) { .hero-inner { grid-template-columns: minmax(0, 1fr) minmax(280px, 420px); } }
 @media (max-width: 860px) { .hero-inner { grid-template-columns: 1fr; } }
 .hero-copy, .hero-vignette { min-width: 0; }
 .hero-copy h1 {
-  margin: 0 0 18px; font-size: clamp(32px, 4.4vw, 54px); line-height: 1.08; font-weight: 800; letter-spacing: -.01em;
+  margin: 0 0 18px; font-size: clamp(28px, 3.4vw, 50px); line-height: 1.12; font-weight: 800; letter-spacing: -.01em;
+  overflow-wrap: break-word;
 }
 .hero-copy h1 span { display: block; }
 .hero-copy h1 .hi { font-family: var(--ui); font-weight: 600; font-size: .72em; opacity: .92; margin-top: 10px; }
@@ -100,17 +105,20 @@ button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.he
 .vig-cover-back { z-index: 1; background-color: #a8875a; background-image: linear-gradient(160deg, #b8975f, #93754a); }
 .vig-cover-front { z-index: 3; transform-origin: left center; transition: transform 1.1s cubic-bezier(.5,0,.2,1); }
 .vig-folder.open .vig-cover-front { transform: rotateY(-124deg); }
+/* A clear red cord crossing the front cover diagonally, tied with a small knot at its centre —
+   sits above the front cover (higher z-index) so it reads as a tied string, not a faint sliver. */
 .vig-tape {
-  position: absolute; left: 50%; top: -3%; width: 12px; height: 52%; background: var(--stamp);
-  background-image: linear-gradient(90deg, rgba(0,0,0,.12), transparent 40%, rgba(255,255,255,.12));
-  transform: translateX(-50%); z-index: 5; border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.2); transition: opacity .4s ease, transform .6s ease;
+  position: absolute; left: -4%; top: 38%; width: 108%; height: 16px; background: var(--stamp);
+  background-image: linear-gradient(180deg, rgba(255,255,255,.3), transparent 45%, rgba(0,0,0,.2));
+  transform: rotate(-7deg); transform-origin: center; z-index: 6; border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.25);
+  transition: opacity .4s ease, transform .6s ease;
 }
 .vig-tape-knot {
-  position: absolute; left: 50%; top: 48%; width: 22px; height: 16px; transform: translate(-50%, -50%) rotate(45deg);
-  background: var(--stamp); border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.2);
+  position: absolute; left: 50%; top: 50%; width: 26px; height: 20px; transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--stamp); border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.25);
 }
-.vig-folder.open .vig-tape { opacity: 0; transform: translateX(-50%) rotate(25deg) scaleY(.3); }
+.vig-folder.open .vig-tape { opacity: 0; transform: rotate(14deg) scaleY(.3); }
 .vig-letter {
   position: absolute; left: 10%; right: 10%; top: 7%; bottom: 9%; z-index: 2;
   background-color: #fdfcf6;
@@ -159,19 +167,23 @@ button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.he
   .vig-folder { width: 100%; max-width: 280px; }
 }
 
-/* ---------- Proof strip ---------- */
-.proof-strip {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule);
-  border-bottom: 1px solid var(--rule); position: relative; padding-bottom: 26px;
+/* ---------- Proof strip: one white panel, numbers + a muted caption underneath ---------- */
+.proof-strip { background: var(--paper); border-bottom: 1px solid var(--rule); padding: 0 0 14px; }
+.proof-grid { display: grid; grid-template-columns: repeat(4, 1fr); }
+.proof-item {
+  padding: clamp(18px, 3vw, 30px) clamp(12px, 2vw, 20px); text-align: center;
+  border-left: 1px solid var(--rule);
 }
-.proof-item { background: var(--paper); padding: clamp(18px, 3vw, 30px) clamp(12px, 2vw, 20px); text-align: center; }
+.proof-item:first-child { border-left: 0; }
 .proof-num { display: block; font-family: var(--type); font-weight: 700; font-size: clamp(26px, 3.4vw, 40px); color: var(--ink); }
 .proof-label { display: block; margin-top: 4px; font-size: 13px; color: var(--pencil); }
-.proof-caption {
-  grid-column: 1 / -1; margin: 10px 0 0; text-align: center; font-size: 12px; color: var(--pencil);
-  background: var(--paper); padding-top: 2px;
+.proof-caption { margin: 2px 0 0; text-align: center; font-size: 12px; color: var(--pencil); }
+@media (max-width: 640px) {
+  .proof-grid { grid-template-columns: repeat(2, 1fr); }
+  .proof-item:nth-child(2) { border-left: 1px solid var(--rule); }
+  .proof-item:nth-child(3) { border-left: 0; border-top: 1px solid var(--rule); }
+  .proof-item:nth-child(4) { border-top: 1px solid var(--rule); }
 }
-@media (max-width: 640px) { .proof-strip { grid-template-columns: repeat(2, 1fr); } }
 
 /* ---------- How it works ---------- */
 .how-it-works { padding: clamp(32px, 5vw, 56px) clamp(16px, 4vw, 40px); max-width: 1300px; margin: 0 auto; }
