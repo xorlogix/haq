@@ -46,6 +46,8 @@ export interface CaseRecord {
   filing_steps?: Array<{ step: string; url?: string | null }>;
   evidence_checklist?: string[];
   deadline_tracks?: string[];
+  /** Per-track base date (YYYY-MM-DD) that deadlines are computed from — e.g. { rti: "2026-09-01", first_appeal: "2026-10-05" }. Each track keeps its own base so marking the appeal filed never shifts the original RTI deadlines, and vice versa. */
+  deadline_bases?: Record<string, string>;
   deadlines?: ComputedDeadline[];
   emergency_note?: string | null;
   filedAt?: string;

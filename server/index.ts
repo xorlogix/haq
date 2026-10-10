@@ -3,7 +3,7 @@ import { PORT, PUBLIC_DIR } from "./config.js";
 import { createCase, listCases, loadCase, newCaseId, readDocument, saveImage, subscribe, updateCase, writeDocument, pushTrace } from "./cases/store.js";
 import { startCase, followUp, isRunning, modelLabel, currentCredentials } from "./agent/caseworker.js";
 import { credentialSourceLabel } from "./agent/credentials.js";
-import { computeDeadlines, daysUntil, todayIST } from "./deadlines.js";
+import { APPEAL_TRACKS, computeDeadlinesFromBases, daysUntil, todayIST } from "./deadlines.js";
 import { reviewDraft } from "./agent/review.js";
 import { listCategories } from "./kb/index.js";
 
@@ -94,7 +94,15 @@ app.post("/api/cases/:id/filed", (req, res) => {
     const rec = updateCase(req.params.id, (r) => {
       r.filedAt = date;
       r.status = "filed";
-      r.deadlines = computeDeadlines(r.deadline_tracks?.length ? r.deadline_tracks : ["rti", "follow_up"], date);
+      const tracks = r.deadline_tracks?.length ? r.deadline_tracks : ["rti", "follow_up"];
+      r.deadline_tracks = tracks;
+      r.deadline_bases = { ...(r.deadline_bases ?? {}) };
+      // Marking "filed" is about the ORIGINAL filing (RTI, complaint, etc.) — it must only move
+      // the bases of the original tracks, never a later appeal's base (that has its own date).
+      for (const track of tracks) {
+        if (!APPEAL_TRACKS.has(track)) r.deadline_bases[track] = date;
+      }
+      r.deadlines = computeDeadlinesFromBases(r.deadline_bases);
     });
     pushTrace(rec.id, { kind: "status", text: `Marked as filed on ${date}. Deadlines recalculated.` });
     res.json({ ok: true });
@@ -137,7 +145,7 @@ app.post("/api/cases/:id/escalate", (req, res) => {
   });
   followUp(
     c.id,
-    `Escalate this case. The RTI was filed on ${c.filedAt ?? "[date]"} and no satisfactory reply has been received within 30 days. Draft the First Appeal under Section 19(1), review it, update deadlines and finalize the case again.`,
+    `Escalate this case. The RTI was filed on ${c.filedAt ?? "[date]"} and no satisfactory reply has been received within 30 days. Draft the First Appeal under Section 19(1), review it, then call compute_deadlines for the "first_appeal" track WITHOUT passing that RTI filing date — the appeal's own deadlines start from today (when the appeal is drafted), not from the RTI's filing date. Finalize the case again.`,
   );
   res.json({ ok: true });
 });

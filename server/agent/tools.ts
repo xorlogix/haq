@@ -1,7 +1,7 @@
 import { createTool } from "@cline/sdk";
 import { z } from "zod";
 import { searchAuthorities, searchProvisions, getAuthority, listCategories } from "../kb/index.js";
-import { computeDeadlines, DEADLINE_RULES, todayIST } from "../deadlines.js";
+import { APPEAL_TRACKS, computeDeadlines, computeDeadlinesFromBases, DEADLINE_RULES, todayIST } from "../deadlines.js";
 import { loadCase, readDocument, updateCase, writeDocument, pushTrace } from "../cases/store.js";
 import { reviewDraft } from "./review.js";
 
@@ -43,17 +43,25 @@ export function buildCaseTools(caseId: string) {
   const computeDeadlinesTool = createTool({
     name: "compute_deadlines",
     description:
-      "Compute exact statutory deadlines from a filing date. Never do date arithmetic yourself. " +
-      `Tracks: ${Object.keys(DEADLINE_RULES).join(", ")}. Defaults the filing date to today (${todayIST()}, IST).`,
+      "Compute exact statutory deadlines. Never do date arithmetic yourself. Each track keeps its own base date — " +
+      `tracks: ${Object.keys(DEADLINE_RULES).join(", ")}. ` +
+      `Pass filing_date for the original filing (RTI, complaint to a bank, etc.) — it defaults to today (${todayIST()}, IST) if the citizen hasn't told you otherwise. ` +
+      "For \"first_appeal\"/\"second_appeal\", do NOT pass the original filing_date — appeal deadlines start from the day the appeal itself is drafted/filed, so omit filing_date (it defaults to today) unless the citizen says the appeal was filed on a different date.",
     inputSchema: z.object({
       tracks: z.array(z.string()).min(1),
-      filing_date: z.string().optional().describe("YYYY-MM-DD"),
+      filing_date: z.string().optional().describe("YYYY-MM-DD — the date this specific track's clock starts. Never the date of a different, earlier track."),
     }),
     execute: async ({ tracks, filing_date }) => {
       const deadlines = computeDeadlines(tracks, filing_date);
       updateCase(caseId, (rec) => {
         rec.deadline_tracks = [...new Set([...(rec.deadline_tracks ?? []), ...tracks])];
-        rec.deadlines = computeDeadlines(rec.deadline_tracks, rec.filedAt ?? filing_date);
+        rec.deadline_bases = { ...(rec.deadline_bases ?? {}) };
+        for (const track of tracks) {
+          // Each track gets its own base: explicit filing_date for this call, else the track's
+          // existing base, else (for non-appeal tracks only) the case's filedAt, else today.
+          rec.deadline_bases[track] = filing_date ?? rec.deadline_bases[track] ?? (APPEAL_TRACKS.has(track) ? undefined : rec.filedAt) ?? todayIST();
+        }
+        rec.deadlines = computeDeadlinesFromBases(rec.deadline_bases);
       });
       return { filing_date: filing_date ?? todayIST(), deadlines };
     },

@@ -58,12 +58,22 @@ export function todayIST(): string {
   return new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
 }
 
-export function computeDeadlines(tracks: string[], filingDate?: string): ComputedDeadline[] {
-  const start = filingDate && /^\d{4}-\d{2}-\d{2}$/.test(filingDate) ? filingDate : todayIST();
+/** Tracks whose clock starts when an appeal is drafted/filed, never inherited from an earlier track's filing date. */
+export const APPEAL_TRACKS = new Set(["first_appeal", "second_appeal"]);
+
+const isIsoDate = (s?: string): s is string => !!s && /^\d{4}-\d{2}-\d{2}$/.test(s);
+
+/**
+ * Compute deadlines for a set of tracks, each anchored to its own base date
+ * (`bases[track]`). Each track's internal rule chain (e.g. RTI reply → first-appeal-last-day)
+ * still starts from that track's own base — tracks never borrow another track's date.
+ */
+export function computeDeadlinesFromBases(bases: Record<string, string | undefined>): ComputedDeadline[] {
   const out: ComputedDeadline[] = [];
-  for (const track of tracks) {
+  for (const [track, baseDate] of Object.entries(bases)) {
     const rules = DEADLINE_RULES[track];
     if (!rules) continue;
+    const start = isIsoDate(baseDate) ? baseDate : todayIST();
     let prevDate = start;
     let prevOffset = 0;
     for (const r of rules) {
@@ -76,6 +86,13 @@ export function computeDeadlines(tracks: string[], filingDate?: string): Compute
     }
   }
   return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Convenience wrapper: every track shares the same single filing date. Prefer computeDeadlinesFromBases for mixed tracks (e.g. RTI + a later appeal). */
+export function computeDeadlines(tracks: string[], filingDate?: string): ComputedDeadline[] {
+  const bases: Record<string, string> = {};
+  for (const track of tracks) bases[track] = isIsoDate(filingDate) ? filingDate : todayIST();
+  return computeDeadlinesFromBases(bases);
 }
 
 export function daysUntil(dateIso: string): number {

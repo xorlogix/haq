@@ -1,8 +1,9 @@
 /** Smoke test: runs full cases through the real Cline agent loop (demo model if no key) and checks the outputs. */
 export {};
 process.env.HAQ_DATA_DIR = process.env.HAQ_DATA_DIR ?? "data-test";
-const { createCase, loadCase, newCaseId, readDocument } = await import("../server/cases/store.js");
+const { createCase, loadCase, newCaseId, readDocument, updateCase } = await import("../server/cases/store.js");
 const { startCase, followUp, isRunning, modelLabel, currentCredentials } = await import("../server/agent/caseworker.js");
+const { APPEAL_TRACKS, computeDeadlinesFromBases, daysUntil } = await import("../server/deadlines.js");
 
 const wait = async (id: string) => { while (isRunning(id)) await new Promise((r) => setTimeout(r, 200)); };
 const scenarios = [
@@ -35,6 +36,18 @@ for (const s of scenarios) {
     console.log(`  [${rtiIsEnglish ? "PASS" : "FAIL"}] official rti draft is in English (not the citizen's Hindi)`);
     if (!rtiIsEnglish) failed++;
 
+    // Simulate an old RTI filing date (like the live bug report: filed long ago, now escalating),
+    // so we can assert the appeal's own deadlines are NOT computed from that stale date.
+    const oldFiledDate = "2026-09-01";
+    updateCase(id, (r) => {
+      r.filedAt = oldFiledDate;
+      r.deadline_bases = { ...(r.deadline_bases ?? {}) };
+      for (const track of r.deadline_tracks ?? []) {
+        if (!APPEAL_TRACKS.has(track)) r.deadline_bases![track] = oldFiledDate;
+      }
+      r.deadlines = computeDeadlinesFromBases(r.deadline_bases!);
+    });
+
     followUp(id, "Escalate: the RTI got no reply in 30 days. Draft the first appeal.");
     await new Promise((r) => setTimeout(r, 50));
     await wait(id);
@@ -43,6 +56,13 @@ for (const s of scenarios) {
     console.log(`  [${appeal?.review?.ok ? "PASS" : "FAIL"}] escalation → first_appeal`, appeal?.review?.issues ?? "");
     if (!appeal?.review?.ok) failed++;
     console.log(readDocument(id, "rti")?.slice(0, 600));
+
+    // Bug fix check: the first_appeal track's own base must not be the stale RTI filing date —
+    // faa_decision must land in the future (computed from today, when the appeal was drafted).
+    const faaDecision = c2.deadlines?.find((d) => d.kind === "faa_decision");
+    const faaInFuture = !!faaDecision && daysUntil(faaDecision.date) >= 0;
+    console.log(`  [${faaInFuture ? "PASS" : "FAIL"}] faa_decision (${faaDecision?.date ?? "missing"}) is in the future, not based on the stale RTI filing date ${oldFiledDate}`);
+    if (!faaInFuture) failed++;
 
     // "Get a copy in Hindi" — the citizen asks for a translated copy of the RTI for their own understanding.
     // (Mirrors the message POST /api/cases/:id/translate sends via followUp().)

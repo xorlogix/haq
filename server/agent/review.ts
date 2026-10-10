@@ -88,7 +88,7 @@ export function reviewDraft(type: string, md: string, sourceMd?: string | null, 
         "Say clearly who sent the notice (which department, bank or court).",
       );
       need(
-        /deadline|due|last date|respond by|within \d+ days|not clearly visible|no deadline|not (mentioned|visible)|समय.?सीमा|अंतिम तिथि|कोई समय-सीमा नहीं|स्पष्ट नहीं/i.test(md),
+        /deadline|due|last date|respond by|within \d+ days|not clearly visible|no deadline|not (mentioned|visible)|समय.?सीमा|अंतिम तिथि|अंतिम तारीख|डेडलाइन|दिनों के (अंदर|भीतर)|कोई समय-सीमा नहीं|स्पष्ट नहीं|\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}\s*तक|\d{1,2}\s+\S+\s+तक/i.test(md),
         "States deadline or says none found",
         "State the deadline mentioned in the notice, or say plainly that no deadline is visible in the image.",
       );
