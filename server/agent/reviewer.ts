@@ -16,6 +16,7 @@ import type { SecondOpinion } from "../cases/store.js";
 import { searchProvisions } from "../kb/index.js";
 import { resolveCredentials } from "./credentials.js";
 import { createDemoReviewerModel } from "./demoModel.js";
+import { summarizeInput, summarizeOutput } from "./trace-format.js";
 
 type AgentInstance = InstanceType<typeof Agent>;
 
@@ -32,10 +33,21 @@ Check:
 
 Use read_case_file (with no doc_id for the case record, with a doc_id to read one saved document) and lookup_law only — you have no write tools and cannot change anything.
 
+## Important: don't penalise intentional blanks
+Documents deliberately contain [bracketed blanks] like [Your full name], [Date], [PIN code] — these are meant for the citizen to fill in before filing, they are NOT a mistake or an incomplete draft. Never lower the verdict or score just because blanks exist. Instead, if useful, add ONE point in your points list naming the most important blanks to fill in before filing (e.g. "[Your full name] और [Date] भरना न भूलें").
+
+Only choose "fix_first" for a REAL problem, such as:
+- the chosen authority is clearly the wrong body for this kind of problem,
+- a document cites the wrong law or the wrong section,
+- a document states a fact, number, date, officer name or reference that was invented rather than left as a blank,
+- a document is missing a legally required element (e.g. an RTI not citing Section 6(1), a complaint with no location or relief sought).
+
+Otherwise choose "ready" — a draft with blanks for the citizen to fill, correct authority, correct law and complete required elements IS ready to file.
+
 Call submit_second_opinion exactly once, at the end, with:
-- verdict: "ready" if the case can be filed as-is, "fix_first" if something should be fixed before filing.
+- verdict: "ready" if the case can be filed as-is (blanks for the citizen to fill don't count against this), "fix_first" only for one of the real problems above.
 - score: 1-10, how confident you are the case is ready to file.
-- points: up to 5 short, concrete points, written in the citizen's own language (the case record's user_language) — never in English if the citizen's language is something else.
+- points: up to 5 short, concrete points, ALL written in the citizen's own language (the case record's user_language) — never in English if the citizen's language is something else.
 
 Be fast and concise: read the case record, read the documents, then submit. Do not call any tool more than necessary.`;
 }
@@ -101,11 +113,11 @@ function createReviewerAgent(caseId: string, onSubmit: (o: { verdict: "ready" | 
   agent.subscribe((e: AgentRuntimeEvent) => {
     switch (e.type) {
       case "tool-started":
-        pushTrace(caseId, { kind: "tool-start", tool: e.toolCall.toolName, input: e.toolCall.input, source: "reviewer" });
+        pushTrace(caseId, { kind: "tool-start", tool: e.toolCall.toolName, input: summarizeInput(e.toolCall.input), source: "reviewer" });
         break;
       case "tool-finished": {
         const part = e.message.content.find((p) => p.type === "tool-result") as { output?: unknown } | undefined;
-        pushTrace(caseId, { kind: "tool-end", tool: e.toolCall.toolName, output: part?.output, source: "reviewer" });
+        pushTrace(caseId, { kind: "tool-end", tool: e.toolCall.toolName, output: summarizeOutput(e.toolCall.toolName, part?.output), source: "reviewer" });
         break;
       }
     }
