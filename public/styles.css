@@ -220,7 +220,7 @@ button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.he
 .tool-icon svg { width: 15px; height: 15px; }
 .tool-body { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .tool-text { font-size: 15px; }
-.agent-badge { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; padding: 1px 8px; border-radius: 999px; text-transform: uppercase; }
+.agent-badge { font-size: 10px; font-weight: 700; letter-spacing: .01em; padding: 1px 7px; border-radius: 999px; text-transform: none; }
 .agent-badge.caseworker { background: var(--ink-wash); color: var(--ink); }
 .agent-badge.reviewer { background: #fff4d6; color: #7a5600; }
 .elapsed { font-family: var(--type); font-size: 12px; color: var(--pencil); margin-left: auto; }
@@ -238,13 +238,21 @@ button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.he
 
 /* ---------- Case cover: khaki case-file with red-tape tie ---------- */
 .case-cover {
-  background: linear-gradient(160deg, #e9d7a4, #d2b374); border-left: 10px solid var(--ink);
+  position: relative; border-radius: var(--radius-lg); padding: 22px 24px 20px 34px; box-shadow: var(--shadow-paper);
+  border-left: 10px solid var(--ink); overflow: hidden; color: var(--text);
+  background-color: #d9c48f;
+  background-image:
+    linear-gradient(160deg, #e3d4a3, #cdb378),
+    repeating-linear-gradient(108deg, rgba(255,255,255,.07) 0 2px, transparent 2px 6px);
 }
+/* Red-tape tie running horizontally across the cover's left edge, below the case-id/model
+   line so it never overlaps any text (title/authority sit further down, outside its band). */
 .case-cover-tape {
-  position: absolute; left: 36px; top: -4px; width: 9px; height: 36px; background: var(--stamp);
-  border-radius: 2px; box-shadow: 0 0 0 1px rgba(0,0,0,.12);
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 22px; height: 9px; background: var(--stamp);
+  background-image: linear-gradient(180deg, rgba(255,255,255,.18), transparent 40%, rgba(0,0,0,.12));
+  box-shadow: 0 0 0 1px rgba(0,0,0,.15); z-index: 0;
 }
-.case-id { background: rgba(255,255,255,.55); padding: 1px 8px; border-radius: 4px; }
+.case-id { background: rgba(255,255,255,.65); padding: 1px 8px; border-radius: 4px; color: var(--ink); }
 
 /* ---------- Letterhead documents ---------- */
 .sheet-letterhead {
@@ -418,11 +426,7 @@ button.hero-cta-secondary.hero-cta-secondary:hover, button.hero-cta-secondary.he
 .get-list .how-icon { flex-shrink: 0; width: 40px; height: 40px; margin-bottom: 0; }
 .get-list .how-icon svg { width: 22px; height: 22px; }
 
-.case-cover {
-  position: relative; background: var(--paper); border-radius: var(--radius-lg); padding: 20px 24px; box-shadow: var(--shadow-paper);
-  border-left: 10px solid var(--ink); overflow: hidden;
-}
-.case-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; color: var(--pencil); padding-right: 150px; }
+.case-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; color: var(--pencil); padding-right: 150px; position: relative; z-index: 1; }
 .case-id { font-family: var(--type); font-weight: 700; color: var(--ink); }
 .case-title { font-size: clamp(24px, 2.6vw, 32px); line-height: 1.15; margin: 6px 0 4px; padding-right: 150px; color: var(--text); }
 .case-authority { margin: 0; color: var(--pencil); padding-right: 150px; }

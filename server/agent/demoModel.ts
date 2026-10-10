@@ -472,6 +472,13 @@ export function createDemoReviewerModel(): AgentModel {
         yield* call("read_case_file", {}, hi ? "केस फ़ाइल पढ़ रहा हूँ। " : "Reading the case file. ");
         return;
       }
+      // Submit exactly once per review. Without this guard the agent loop re-invokes the
+      // scripted model after its own tool result, and it would call submit_second_opinion
+      // again on every subsequent turn instead of stopping.
+      if (run.submit_second_opinion) {
+        yield { type: "finish", reason: "stop" };
+        return;
+      }
       yield* call("submit_second_opinion", {
         verdict: "ready",
         score: 8,

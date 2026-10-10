@@ -282,7 +282,10 @@ $("#intakeForm").addEventListener("submit", async (e) => {
     $("#photoLabel").classList.remove("has-photo");
     $("#photo").value = "";
     await openCase(id);
-    if (matchMedia("(max-width: 960px)").matches) $("#desk").scrollIntoView({ behavior: "smooth" });
+    // The case now sits below the hero/proof-strip/how-it-works sections, so always bring the
+    // case cover into view (not just on narrow viewports) — respects prefers-reduced-motion.
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    ($("#case") || $("#desk"))?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   } catch (ex) {
     err.textContent = ex.message;
     err.hidden = false;
@@ -303,8 +306,7 @@ async function openCase(id) {
   $("#log").innerHTML = "";
   $("#stamp").hidden = true;
   toolStepCount = 0;
-  liveTimers.forEach((id) => clearInterval(id));
-  liveTimers.clear();
+  lastEventT = null;
   history.replaceState(null, "", `#${id}`);
   await refresh();
   state.es = new EventSource(`/api/cases/${encodeURIComponent(id)}/events`);
@@ -355,24 +357,12 @@ const TOOL_ICONS = {
 };
 const DEFAULT_TOOL_ICON = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>';
 
-// Live "x.x s" elapsed timers for in-flight tool rows, ticked every 100ms.
-const liveTimers = new Map();
-function startLiveTimer(li) {
-  const start = performance.now();
-  li.dataset.startedAt = String(start);
-  const timerEl = li.querySelector(".elapsed");
-  const id = setInterval(() => {
-    if (!timerEl.isConnected) { clearInterval(id); liveTimers.delete(li); return; }
-    timerEl.textContent = `${((performance.now() - start) / 1000).toFixed(1)}s`;
-  }, 100);
-  liveTimers.set(li, id);
-}
-function stopLiveTimer(li) {
-  const id = liveTimers.get(li);
-  if (id) { clearInterval(id); liveTimers.delete(li); }
-  const timerEl = li.querySelector(".elapsed");
-  const start = Number(li.dataset.startedAt || 0);
-  if (timerEl && start) timerEl.textContent = `${((performance.now() - start) / 1000).toFixed(1)}s`;
+// Time shown per step is the gap since the *previous* log event (server timestamps, ev.t),
+// not how long the tool call itself took — that gap is where the model's "thinking" happens,
+// which is the interesting number for a demo. Reset whenever a new case is opened.
+let lastEventT = null;
+function formatElapsed(ms) {
+  return `${Math.max(0, ms / 1000).toFixed(1)} s`;
 }
 
 let toolStepCount = 0;
@@ -401,6 +391,12 @@ function onEvent(ev) {
   const isReviewer = ev.source === "reviewer";
   const agentBadge = `<span class="agent-badge ${isReviewer ? "reviewer" : "caseworker"}">${isReviewer ? t("agent_badge_reviewer") : t("agent_badge_caseworker")}</span>`;
   const reviewerPrefix = isReviewer ? `<span class="muted" style="font-size:12px">${esc(t("agent_badge_reviewer"))} · </span>` : "";
+  // Elapsed since the previous log event (includes the model's thinking time before this
+  // step started) — computed from server timestamps so it's accurate even if the tab was
+  // backgrounded. Falls back to "now" the first time there's nothing to compare against.
+  const now = typeof ev.t === "number" ? ev.t : Date.now();
+  const sincePrevious = lastEventT != null ? now - lastEventT : 0;
+  lastEventT = now;
   if (ev.kind === "tool-start") {
     toolStepCount += 1;
     updateLogMeta();
@@ -409,16 +405,14 @@ function onEvent(ev) {
     li.dataset.source = ev.source || "";
     if (ev.tool === "review_draft" && ev.input?.doc_id) li.dataset.docId = ev.input.doc_id;
     const icon = TOOL_ICONS[ev.tool] || DEFAULT_TOOL_ICON;
-    li.innerHTML = `<span class="tool-icon">${icon}</span><span class="tool-body">${agentBadge}<span class="tool-text">${esc((TOOL_TEXT[ev.tool] || (() => ev.tool))(ev.input))}</span><span class="elapsed"></span><span class="detail"></span><span class="progress-line"></span></span>`;
+    li.innerHTML = `<span class="tool-icon">${icon}</span><span class="tool-body">${agentBadge}<span class="tool-text">${esc((TOOL_TEXT[ev.tool] || (() => ev.tool))(ev.input))}</span><span class="elapsed">${esc(formatElapsed(sincePrevious))}</span><span class="detail"></span><span class="progress-line"></span></span>`;
     log.appendChild(li);
     log.scrollTop = log.scrollHeight;
-    startLiveTimer(li);
     return;
   } else if (ev.kind === "tool-end") {
     const open = [...log.querySelectorAll(`li.running[data-tool="${ev.tool}"][data-source="${ev.source || ""}"]`)].pop();
     if (open) {
       open.classList.remove("running");
-      stopLiveTimer(open);
       if (ev.tool === "review_draft") {
         open.classList.add(ev.output?.ok ? "pass" : "fail");
         if (!ev.output?.ok) open.classList.add("glow-fail");
@@ -730,8 +724,10 @@ function deadlinesTimeline(ds, filedAt) {
   const pins = points.map((p) => {
     const overdue = typeof p.daysLeft === "number" && p.daysLeft < 0 && p.kind !== "filed";
     const cls = p.kind === "filed" ? "filed" : overdue ? "over" : "";
+    // Full label always goes in the title tooltip; only a short version renders under the pin
+    // so long labels (e.g. "Follow up with the office if no reply") never get clipped mid-word.
     return `<span class="tl-pin ${cls}" style="left:${pct(p.date).toFixed(1)}%" title="${esc(p.label)} — ${esc(p.date)}">
-      <span class="tl-pin-dot"></span><span class="tl-pin-label">${esc(p.label)}</span>
+      <span class="tl-pin-dot"></span><span class="tl-pin-label">${esc(shortLabel(p.label))}</span>
     </span>`;
   }).join("");
   return `<div class="deadlines-timeline" role="img" aria-label="Case timeline from filing to deadlines">
@@ -741,6 +737,12 @@ function deadlinesTimeline(ds, filedAt) {
   </div>`;
 }
 const todayISO = () => new Date().toISOString().slice(0, 10);
+// Short label shown under a timeline pin — the ellipsis-via-CSS truncation already guards
+// against overflow, this just avoids chopping a long label mid-word before CSS gets to it.
+function shortLabel(label, max = 22) {
+  if (!label || label.length <= max) return label;
+  return `${label.slice(0, max - 1).trimEnd()}…`;
+}
 
 function renderDeadlines(panel, c) {
   const ds = c.deadlines || [];

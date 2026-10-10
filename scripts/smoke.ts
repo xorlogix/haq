@@ -45,6 +45,13 @@ for (const s of scenarios) {
   console.log(`  [${opinionOk ? "PASS" : "FAIL"}] senior reviewer second opinion`, withOpinion.second_opinion);
   if (!opinionOk) failed++;
 
+  // The scripted reviewer must stop after its first successful submit_second_opinion call,
+  // not keep re-submitting on every subsequent agent turn.
+  const submitCount = withOpinion.trace.filter((t) => t.kind === "tool-start" && t.tool === "submit_second_opinion").length;
+  const submitOnce = submitCount === 1;
+  console.log(`  [${submitOnce ? "PASS" : "FAIL"}] submit_second_opinion called exactly once (found ${submitCount})`);
+  if (!submitOnce) failed++;
+
   if (s === scenarios[0]) {
     // The official RTI draft must be English even though the citizen wrote Hindi — "Get it in my language"
     // only translates a citizen-facing copy, it never changes what gets filed.
