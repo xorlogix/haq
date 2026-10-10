@@ -1,0 +1,176 @@
+// Haq interface chrome translations (English / Hindi). This file only covers static UI text —
+// it never touches agent-generated content (summaries, documents, filing steps), which is always
+// in the citizen's own language or English as the caseworker decides.
+export const LANGS = ["en", "hi"];
+
+export const STRINGS = {
+  en: {
+    brand_tag: "Your AI caseworker for every government problem",
+    intake_title: "What's wrong?",
+    intake_lede: "Say it or type it in your own language. Haq finds the office responsible, writes your complaint and RTI, and tells you exactly what to do next.",
+    problem_label: "Describe your problem",
+    speak: "Speak",
+    listening: "Listening… tap to stop",
+    lang_label: "Language",
+    city_label: "City / district",
+    state_label: "State",
+    photo_add: "Add a photo (optional)",
+    photo_added: "Photo added",
+    open_case: "Open my case",
+    opening: "Opening…",
+    try_one: "Try one",
+    my_cases: "My cases",
+    no_cases: "No cases yet.",
+    no_cases_long: "No cases yet. Your cases stay on this device's server.",
+    case_file_tab: "CASE FILE",
+    desk_title: "Your case file opens here",
+    desk_lede: "Haq's caseworker works in front of you: it finds the office responsible, checks the law, drafts your papers, checks them against a filing checklist, and plans your deadlines.",
+    promise_1: "<strong>Right office, first time.</strong> Grounded in a directory of real grievance channels — never invented.",
+    promise_2: "<strong>Papers that don't get rejected.</strong> Every draft passes a filing checklist before you see it.",
+    promise_3: "<strong>It doesn't forget.</strong> When the 30 days run out, it writes your appeal.",
+    log_title: "Caseworker at work",
+    log_sub: "Cline agent · plan → act → verify",
+    ask_placeholder: "Ask a question or tell Haq what happened…",
+    send: "Send",
+    footer: "Haq drafts paperwork and points you to official channels; it is not a lawyer. Verify portal links and helplines before filing. Free legal aid: NALSA 15100.",
+    print_case: "Print full case file",
+    read_aloud: "🔊 Read aloud",
+    who_responsible: "Who is responsible",
+    next_steps: "Next steps",
+    keep_ready: "Keep these ready",
+    what_to_do: "What to do",
+    deadlines_tab: "Deadlines",
+    fill_edit: "Fill in / edit",
+    copy_text: "Copy text",
+    copied: "Copied",
+    print_pdf: "Print / save PDF",
+    share_wa: "Share on WhatsApp",
+    get_copy_in: "Get a copy in",
+    save_changes: "Save changes",
+    cancel: "Cancel",
+    doc_complaint: "Complaint",
+    doc_rti: "RTI",
+    doc_first_appeal: "First appeal",
+    doc_second_appeal: "Second appeal",
+    doc_explainer: "Explainer",
+    filed_on: "Filed on",
+    if_filed_today: "If you file today",
+    mark_filed: "Mark as filed",
+    update_filed: "Update filing date",
+    no_reply_appeal: "No reply — draft my First Appeal",
+    escalate_now: "Escalate now",
+    resolved: "It got solved",
+    deadlines_hint: "Haq counts the days for you. When a reply is overdue, one tap asks the caseworker to write the appeal.",
+    deadlines_empty: "Deadlines appear once the caseworker has planned them.",
+    status_working: "working",
+    status_ready: "ready to file",
+    status_filed: "filed",
+    status_escalated: "appeal",
+    status_resolved: "resolved",
+    status_failed: "needs attention",
+    status_overdue: "overdue",
+    summary_researching: "The caseworker is researching and drafting. Watch its steps on the left — your papers appear here as tabs as soon as they're written.",
+    summary_none: "No summary yet.",
+    summary_failed_hint: "The caseworker stopped — see the log for why, then send a message to retry.",
+  },
+  hi: {
+    brand_tag: "हर सरकारी समस्या के लिए आपका एआई केसवर्कर",
+    intake_title: "क्या परेशानी है?",
+    intake_lede: "अपनी भाषा में बोलें या लिखें। हक़ ज़िम्मेदार कार्यालय ढूँढता है, आपकी शिकायत और RTI तैयार करता है, और बताता है कि आगे क्या करना है।",
+    problem_label: "अपनी समस्या बताएं",
+    speak: "बोलें",
+    listening: "सुन रहा है… रोकने के लिए टैप करें",
+    lang_label: "भाषा",
+    city_label: "शहर / ज़िला",
+    state_label: "राज्य",
+    photo_add: "फोटो जोड़ें (वैकल्पिक)",
+    photo_added: "फोटो जोड़ी गई",
+    open_case: "मेरा केस खोलें",
+    opening: "खोला जा रहा है…",
+    try_one: "एक आज़माएं",
+    my_cases: "मेरे केस",
+    no_cases: "अभी तक कोई केस नहीं।",
+    no_cases_long: "अभी तक कोई केस नहीं। आपके केस इस डिवाइस के सर्वर पर रहते हैं।",
+    case_file_tab: "केस फ़ाइल",
+    desk_title: "आपकी केस फ़ाइल यहाँ खुलेगी",
+    desk_lede: "हक़ का केसवर्कर आपके सामने काम करता है: यह ज़िम्मेदार कार्यालय ढूँढता है, कानून जांचता है, आपके कागज़ात तैयार करता है, उन्हें एक फाइलिंग चेकलिस्ट से जांचता है, और आपकी समय-सीमा तय करता है।",
+    promise_1: "<strong>सही कार्यालय, पहली बार में।</strong> असली शिकायत चैनलों की सूची पर आधारित — कभी बनावटी नहीं।",
+    promise_2: "<strong>ऐसे कागज़ात जो खारिज नहीं होते।</strong> हर ड्राफ्ट आपको दिखाए जाने से पहले एक फाइलिंग चेकलिस्ट पास करता है।",
+    promise_3: "<strong>यह भूलता नहीं।</strong> जब 30 दिन पूरे हो जाते हैं, यह आपकी अपील लिखता है।",
+    log_title: "केसवर्कर काम कर रहा है",
+    log_sub: "Cline एजेंट · योजना → कार्य → जांच",
+    ask_placeholder: "सवाल पूछें या हक़ को बताएं कि क्या हुआ…",
+    send: "भेजें",
+    footer: "हक़ कागज़ात तैयार करता है और आपको आधिकारिक चैनल बताता है; यह वकील नहीं है। फाइल करने से पहले पोर्टल लिंक और हेल्पलाइन जांच लें। मुफ़्त कानूनी सहायता: NALSA 15100.",
+    print_case: "पूरी केस फ़ाइल प्रिंट करें",
+    read_aloud: "🔊 ज़ोर से पढ़ें",
+    who_responsible: "कौन ज़िम्मेदार है",
+    next_steps: "अगले कदम",
+    keep_ready: "ये तैयार रखें",
+    what_to_do: "क्या करना है",
+    deadlines_tab: "समय-सीमाएं",
+    fill_edit: "भरें / संपादित करें",
+    copy_text: "टेक्स्ट कॉपी करें",
+    copied: "कॉपी हो गया",
+    print_pdf: "प्रिंट / PDF सहेजें",
+    share_wa: "WhatsApp पर शेयर करें",
+    get_copy_in: "इसकी एक प्रति पाएं",
+    save_changes: "बदलाव सहेजें",
+    cancel: "रद्द करें",
+    doc_complaint: "शिकायत",
+    doc_rti: "RTI",
+    doc_first_appeal: "पहली अपील",
+    doc_second_appeal: "दूसरी अपील",
+    doc_explainer: "अनुवाद",
+    filed_on: "दर्ज किया गया",
+    if_filed_today: "अगर आज फाइल करें",
+    mark_filed: "फाइल किया गया के रूप में चिह्नित करें",
+    update_filed: "फाइलिंग तारीख अपडेट करें",
+    no_reply_appeal: "कोई जवाब नहीं — मेरी पहली अपील तैयार करें",
+    escalate_now: "अभी आगे बढ़ाएं",
+    resolved: "समस्या हल हो गई",
+    deadlines_hint: "हक़ आपके लिए दिन गिनता है। जब जवाब में देरी हो जाती है, एक टैप पर केसवर्कर अपील लिखता है।",
+    deadlines_empty: "समय-सीमाएं केसवर्कर द्वारा योजना बनाने के बाद दिखेंगी।",
+    status_working: "काम जारी",
+    status_ready: "फाइल करने के लिए तैयार",
+    status_filed: "दर्ज",
+    status_escalated: "अपील",
+    status_resolved: "हल",
+    status_failed: "ध्यान देने की ज़रूरत",
+    status_overdue: "समय पार",
+    summary_researching: "केसवर्कर शोध और ड्राफ्टिंग कर रहा है। बाईं ओर उसके कदम देखें — आपके कागज़ात तैयार होते ही यहाँ टैब के रूप में दिखेंगे।",
+    summary_none: "अभी तक कोई सारांश नहीं।",
+    summary_failed_hint: "केसवर्कर रुक गया — कारण जानने के लिए लॉग देखें, फिर दोबारा कोशिश करने के लिए संदेश भेजें।",
+  },
+};
+
+const STORAGE_KEY = "haq:lang";
+
+export function getLang() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && LANGS.includes(saved)) return saved;
+  } catch {}
+  return "en";
+}
+
+export function setLang(lang) {
+  if (!LANGS.includes(lang)) return;
+  try { localStorage.setItem(STORAGE_KEY, lang); } catch {}
+  document.documentElement.lang = lang;
+  applyStaticI18n(lang);
+  document.dispatchEvent(new CustomEvent("haq:lang-changed", { detail: { lang } }));
+}
+
+/** Translate one key in the current (or given) UI language. Never used for agent-generated content. */
+export function t(key, lang = getLang()) {
+  return STRINGS[lang]?.[key] ?? STRINGS.en[key] ?? key;
+}
+
+/** Apply translations to every element with data-i18n / data-i18n-placeholder in the document. */
+export function applyStaticI18n(lang = getLang()) {
+  // innerHTML is safe here: all data-i18n strings are developer-authored copy in STRINGS above,
+  // never user input or agent-generated content.
+  document.querySelectorAll("[data-i18n]").forEach((el) => { el.innerHTML = t(el.dataset.i18n, lang); });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => { el.placeholder = t(el.dataset.i18nPlaceholder, lang); });
+}

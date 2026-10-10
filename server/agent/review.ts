@@ -63,9 +63,16 @@ export function reviewDraft(type: string, md: string, sourceMd?: string | null):
   if (type === "complaint") {
     need(/(subject|sub)\s*[:：]|विषय\s*[:：]/i.test(md), "Has subject line", "Add a one-line 'Subject:' so the office can route it.");
     need(/locat|address|ward|road|near|village|area|landmark|pin|स्थान|पता|वार्ड|सड़क|गांव|गाँव|नज़दीक/i.test(md), "States location", "State the exact location (address, ward, landmark, PIN).");
+    need(
+      /\b\d{6}\b|pin\s*code|पिन\s*(कोड)?/i.test(md),
+      "Has a PIN code",
+      "Include the 6-digit PIN code, or a [PIN code] blank, so the office can be located precisely.",
+    );
     need(/since|on \d|dated|days|weeks|months|\d{1,2}[\/.-]\d{1,2}|20\d\d|से|दिन|हफ्त|सप्ताह|महीन|तारीख/i.test(md), "States dates/duration", "Say since when the problem exists and any earlier complaint dates/numbers.");
     need(/request|kindly|direct|take action|resolve|repair|refund|restore|sanction|release|pay|अनुरोध|कृपया|कार्रवाई|मरम्मत|समाधान/i.test(md), "Specific relief sought", "End with the specific action you want and a reasonable time frame.");
     need(/enclos|attach|annex|photo|copy of|संलग्नक|संलग्न|अनुलग्नक|फोटो/i.test(md), "Lists attachments", "List enclosures (photos, receipts, earlier complaint copies, ID).");
+    const words = wordCount(md);
+    need(words <= 450, "Within 450 words", `Complaint is ${words} words; keep it under 450 words so it reads as a focused, actionable complaint.`);
   }
 
   if (type === "explainer") {

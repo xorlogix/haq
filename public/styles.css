@@ -49,6 +49,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .model-badge.demo { background: rgba(242,169,0,.18); border-color: rgba(242,169,0,.6); }
 
+/* Interface language toggle (English/Hindi chrome only) */
+.ui-lang-toggle { display: inline-flex; gap: 2px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; padding: 2px; }
+.ui-lang-btn { border: 0; background: transparent; color: #fff; font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 999px; cursor: pointer; opacity: .75; }
+.ui-lang-btn[aria-pressed="true"] { background: #fff; color: var(--ink); opacity: 1; }
+
 /* Layout */
 .layout {
   display: grid; grid-template-columns: minmax(320px, 440px) 1fr; gap: clamp(16px, 3vw, 36px);
@@ -151,6 +156,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .case-title { font-size: clamp(24px, 2.6vw, 32px); line-height: 1.15; margin: 6px 0 4px; padding-right: 150px; color: var(--text); }
 .case-authority { margin: 0; color: var(--pencil); padding-right: 150px; }
 @media (max-width: 600px) { .case-title, .case-authority { padding-right: 0; } }
+.print-case-btn { margin-top: 10px; }
 
 /* The one memorable moment: the rubber stamp */
 .stamp {
@@ -249,6 +255,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
+/* Single-document print (the per-document "Print / save PDF" toolbar button) */
 @media print {
   body { background: #fff; }
   .top, .intake, .log, .tabs, .toolbar, .review, .foot, .case-cover, .emergency { display: none !important; }
@@ -256,6 +263,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
   .panel { box-shadow: none; padding: 0; }
   .sheet { border: 0; box-shadow: none; padding: 0; max-width: none; font-size: 12pt; }
   .sheet .blank { background: none; }
+}
+
+/* Full case-file print (the case-cover "Print full case file" button) */
+.print-area { display: none; }
+body.printing-full-case > *:not(#printArea) { display: none !important; }
+body.printing-full-case #printArea { display: block; }
+.print-cover h1 { font-size: 24pt; margin: 0 0 4px; }
+.print-cover h2 { font-size: 13pt; margin: 18px 0 6px; }
+.print-doc { break-before: page; page-break-before: always; }
+.print-doc h2 { font-size: 14pt; margin: 0 0 4px; }
+@media print {
+  body.printing-full-case .print-area { display: block; }
+  body.printing-full-case .print-area .sheet { border: 0; box-shadow: none; padding: 0; max-width: none; font-size: 12pt; }
+  body.printing-full-case .print-area .sheet .blank { background: none; }
 }
 
 /* grid overflow guards */

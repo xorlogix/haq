@@ -17,29 +17,33 @@
       <span class="brand-mark">हक़</span>
       <span class="brand-name">Haq</span>
     </a>
-    <p class="brand-tag">Your AI caseworker for every government problem</p>
+    <p class="brand-tag" data-i18n="brand_tag">Your AI caseworker for every government problem</p>
+    <div class="ui-lang-toggle" role="group" aria-label="Interface language">
+      <button type="button" class="ui-lang-btn" id="uiLangEn" data-lang="en" aria-pressed="true">English</button>
+      <button type="button" class="ui-lang-btn" id="uiLangHi" data-lang="hi" aria-pressed="false">हिन्दी</button>
+    </div>
     <span id="modelBadge" class="model-badge" title="Model running the Cline SDK caseworker">…</span>
   </header>
 
   <main class="layout">
     <!-- Intake -->
     <section class="intake" aria-labelledby="intakeTitle">
-      <h1 id="intakeTitle">What's wrong? <span class="hi" lang="hi">क्या परेशानी है?</span></h1>
-      <p class="lede">Say it or type it in your own language. Haq finds the office responsible, writes your complaint and RTI, and tells you exactly what to do next.</p>
+      <h1 id="intakeTitle" data-i18n="intake_title">What's wrong?</h1>
+      <p class="lede" data-i18n="intake_lede">Say it or type it in your own language. Haq finds the office responsible, writes your complaint and RTI, and tells you exactly what to do next.</p>
 
       <form id="intakeForm" class="intake-form" autocomplete="off">
         <div class="speak">
-          <label for="problem" class="sr-only">Describe your problem</label>
+          <label for="problem" class="sr-only" data-i18n="problem_label">Describe your problem</label>
           <textarea id="problem" name="problem" rows="5" required minlength="8"
             placeholder="e.g. मेरे घर के सामने सड़क पर बड़ा गड्ढा है, 3 हफ़्ते से — कल एक स्कूटर वाला गिर गया।"></textarea>
           <button type="button" id="micBtn" class="mic" aria-pressed="false" aria-label="Speak your problem">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg>
-            <span id="micLabel">Speak</span>
+            <span id="micLabel" data-i18n="speak">Speak</span>
           </button>
         </div>
 
         <div class="row">
-          <label>Language
+          <label><span data-i18n="lang_label">Language</span>
             <select id="lang" name="lang">
               <option value="hi-IN" data-name="Hindi">हिन्दी · Hindi</option>
               <option value="en-IN" data-name="English">English</option>
@@ -55,10 +59,10 @@
               <option value="or-IN" data-name="Odia">ଓଡ଼ିଆ · Odia</option>
             </select>
           </label>
-          <label>City / district
+          <label><span data-i18n="city_label">City / district</span>
             <input id="city" name="city" placeholder="Guwahati" />
           </label>
-          <label>State
+          <label><span data-i18n="state_label">State</span>
             <input id="state" name="state" placeholder="Assam" list="states" />
           </label>
         </div>
@@ -67,15 +71,15 @@
           <label class="photo" id="photoLabel">
             <input type="file" id="photo" accept="image/*" capture="environment" />
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 7.2 6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3.2L15 4H9Zm3 4.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg>
-            <span id="photoText">Add a photo (optional)</span>
+            <span id="photoText" data-i18n="photo_add">Add a photo (optional)</span>
           </label>
-          <button type="submit" class="primary" id="openBtn">Open my case</button>
+          <button type="submit" class="primary" id="openBtn" data-i18n="open_case">Open my case</button>
         </div>
         <p id="formError" class="form-error" role="alert" hidden></p>
       </form>
 
       <div class="examples" aria-label="Example problems">
-        <p class="examples-title">Try one</p>
+        <p class="examples-title" data-i18n="try_one">Try one</p>
         <button class="chip" data-lang="hi-IN" data-city="Guwahati" data-state="Assam" data-text="GS Road pe Ganeshguri flyover ke paas bahut bada gaddha hai, 3 hafte se. Kal raat ek scooter wala gir gaya. Shikayat ki thi par kuch nahi hua.">Pothole on GS Road</button>
         <button class="chip" data-lang="hi-IN" data-city="Barpeta" data-state="Assam" data-text="मेरी माँ की वृद्धा पेंशन पिछले 5 महीने से बैंक खाते में नहीं आई है। ब्लॉक ऑफिस में दो बार गए, कोई जवाब नहीं।">Mother's pension stopped</button>
         <button class="chip" data-lang="en-IN" data-city="Pune" data-state="Maharashtra" data-text="Someone took Rs 18,000 from my account yesterday through a fake UPI collect request pretending to be a courier company.">UPI fraud, ₹18,000</button>
@@ -83,8 +87,8 @@
       </div>
 
       <section class="my-cases" aria-labelledby="casesTitle">
-        <h2 id="casesTitle">My cases</h2>
-        <ul id="caseList" class="case-list"><li class="muted">No cases yet.</li></ul>
+        <h2 id="casesTitle" data-i18n="my_cases">My cases</h2>
+        <ul id="caseList" class="case-list"><li class="muted" data-i18n="no_cases">No cases yet.</li></ul>
       </section>
     </section>
 
@@ -92,17 +96,17 @@
     <section class="desk" id="desk" aria-live="polite">
       <div class="desk-empty" id="deskEmpty">
         <div class="folder" aria-hidden="true">
-          <div class="folder-tab">CASE FILE</div>
+          <div class="folder-tab" data-i18n="case_file_tab">CASE FILE</div>
           <div class="folder-body">
             <span class="folder-line"></span><span class="folder-line short"></span><span class="folder-line"></span>
           </div>
         </div>
-        <h2>Your case file opens here</h2>
-        <p>Haq's caseworker works in front of you: it finds the office responsible, checks the law, drafts your papers, checks them against a filing checklist, and plans your deadlines.</p>
+        <h2 data-i18n="desk_title">Your case file opens here</h2>
+        <p data-i18n="desk_lede">Haq's caseworker works in front of you: it finds the office responsible, checks the law, drafts your papers, checks them against a filing checklist, and plans your deadlines.</p>
         <ul class="promise">
-          <li><strong>Right office, first time.</strong> Grounded in a directory of real grievance channels — never invented.</li>
-          <li><strong>Papers that don't get rejected.</strong> Every draft passes a filing checklist before you see it.</li>
-          <li><strong>It doesn't forget.</strong> When the 30 days run out, it writes your appeal.</li>
+          <li data-i18n="promise_1"><strong>Right office, first time.</strong> Grounded in a directory of real grievance channels — never invented.</li>
+          <li data-i18n="promise_2"><strong>Papers that don't get rejected.</strong> Every draft passes a filing checklist before you see it.</li>
+          <li data-i18n="promise_3"><strong>It doesn't forget.</strong> When the 30 days run out, it writes your appeal.</li>
         </ul>
       </div>
 
@@ -114,6 +118,7 @@
           </div>
           <h2 id="caseTitle" class="case-title">Opening your case…</h2>
           <p class="case-authority" id="caseAuthority"></p>
+          <button type="button" class="ghost print-case-btn" id="printCaseBtn" data-i18n="print_case">Print full case file</button>
           <div class="stamp" id="stamp" hidden></div>
         </header>
 
@@ -121,13 +126,13 @@
 
         <div class="case-grid">
           <section class="log" aria-labelledby="logTitle">
-            <h3 id="logTitle">Caseworker at work <span class="log-sub">Cline agent · plan → act → verify</span></h3>
+            <h3 id="logTitle"><span data-i18n="log_title">Caseworker at work</span> <span class="log-sub" data-i18n="log_sub">Cline agent · plan → act → verify</span></h3>
             <ol id="log" class="log-list"></ol>
             <form id="followForm" class="follow" hidden>
-              <label for="followText" class="sr-only">Ask the caseworker</label>
-              <input id="followText" placeholder="Ask a question or tell Haq what happened…" />
+              <label for="followText" class="sr-only" data-i18n="ask_placeholder">Ask the caseworker</label>
+              <input id="followText" data-i18n-placeholder="ask_placeholder" placeholder="Ask a question or tell Haq what happened…" />
               <button type="button" class="mic mic-sm" id="followMic" aria-label="Speak"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z"/></svg></button>
-              <button class="secondary" type="submit">Send</button>
+              <button class="secondary" type="submit" data-i18n="send">Send</button>
             </form>
           </section>
 
@@ -144,9 +149,12 @@
     <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option><option>Bihar</option><option>Chhattisgarh</option><option>Delhi</option><option>Goa</option><option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option><option>Jharkhand</option><option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option><option>Odisha</option><option>Punjab</option><option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option><option>Jammu and Kashmir</option><option>Ladakh</option><option>Puducherry</option><option>Chandigarh</option>
   </datalist>
 
-  <footer class="foot">
+  <footer class="foot" data-i18n="footer">
     Haq drafts paperwork and points you to official channels; it is not a lawyer. Verify portal links and helplines before filing. Free legal aid: NALSA 15100.
   </footer>
+
+  <!-- Hidden full case printout — built just before window.print(), see public/app.js printFullCase() -->
+  <div id="printArea" class="print-area" hidden></div>
 
   <script src="/app.js" type="module"></script>
 </body>

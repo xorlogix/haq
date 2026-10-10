@@ -1,10 +1,25 @@
 // Haq front end — no build step. Talks to the Express API and streams the Cline agent's work over SSE.
+import { t, getLang, setLang, applyStaticI18n } from "/i18n.js";
+
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const LANG_CODES = { hindi: "hi-IN", english: "en-IN", assamese: "as-IN", bengali: "bn-IN", tamil: "ta-IN", telugu: "te-IN", marathi: "mr-IN", gujarati: "gu-IN", kannada: "kn-IN", malayalam: "ml-IN", punjabi: "pa-IN", odia: "or-IN", urdu: "ur-IN" };
 
 const state = { caseId: null, data: null, tab: "summary", es: null, lastStatus: null, editing: null, photo: null, refreshTimer: null };
+
+// ---------- interface language toggle (English/Hindi chrome only — never agent content) ----------
+function renderUiLangToggle() {
+  const lang = getLang();
+  $("#uiLangEn")?.setAttribute("aria-pressed", String(lang === "en"));
+  $("#uiLangHi")?.setAttribute("aria-pressed", String(lang === "hi"));
+}
+$("#uiLangEn")?.addEventListener("click", () => { setLang("en"); renderUiLangToggle(); });
+$("#uiLangHi")?.addEventListener("click", () => { setLang("hi"); renderUiLangToggle(); });
+document.addEventListener("haq:lang-changed", () => { if (state.data) { renderTabs(state.data); renderPanel(state.data); } loadCases(); });
+applyStaticI18n(getLang());
+document.documentElement.lang = getLang();
+renderUiLangToggle();
 
 // ---------- status + case list ----------
 async function api(path, opts = {}) {
@@ -26,15 +41,15 @@ async function loadStatus() {
 
 function statusPill(c) {
   const nd = c.nextDeadline;
-  if (c.status === "filed" && nd && nd.daysLeft < 0) return `<span class="pill overdue">overdue</span>`;
-  const label = { working: "working", ready: "ready to file", filed: "filed", escalated: "appeal", resolved: "resolved", failed: "needs attention" }[c.status] || c.status;
+  if (c.status === "filed" && nd && nd.daysLeft < 0) return `<span class="pill overdue">${t("status_overdue")}</span>`;
+  const label = { working: t("status_working"), ready: t("status_ready"), filed: t("status_filed"), escalated: t("status_escalated"), resolved: t("status_resolved"), failed: t("status_failed") }[c.status] || c.status;
   return `<span class="pill ${c.status}">${label}</span>`;
 }
 
 async function loadCases() {
   const list = await api("/api/cases").catch(() => []);
   const ul = $("#caseList");
-  if (!list.length) { ul.innerHTML = `<li class="muted">No cases yet. Your cases stay on this device's server.</li>`; return; }
+  if (!list.length) { ul.innerHTML = `<li class="muted">${esc(t("no_cases_long"))}</li>`; return; }
   ul.innerHTML = list.map((c) => {
     const nd = c.nextDeadline;
     const sub = nd ? (nd.daysLeft >= 0 ? `${nd.label} · ${nd.daysLeft} days left` : `${nd.label} · ${-nd.daysLeft} days ago`) : new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
@@ -63,11 +78,11 @@ function attachMic(button, field, getLang, labelEl) {
       for (const r of ev.results) text += r[0].transcript;
       field.value = base + text;
     };
-    rec.onend = () => { rec = null; button.setAttribute("aria-pressed", "false"); if (labelEl) labelEl.textContent = "Speak"; };
+    rec.onend = () => { rec = null; button.setAttribute("aria-pressed", "false"); if (labelEl) labelEl.textContent = t("speak"); };
     rec.onerror = () => rec?.stop();
     rec.start();
     button.setAttribute("aria-pressed", "true");
-    if (labelEl) labelEl.textContent = "Listening… tap to stop";
+    if (labelEl) labelEl.textContent = t("listening");
   });
 }
 attachMic($("#micBtn"), $("#problem"), () => $("#lang").value, $("#micLabel"));
@@ -82,7 +97,7 @@ $("#photo").addEventListener("change", async (e) => {
   const canvas = Object.assign(document.createElement("canvas"), { width: Math.round(img.width * scale), height: Math.round(img.height * scale) });
   canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
   state.photo = canvas.toDataURL("image/jpeg", 0.82);
-  $("#photoText").textContent = `Photo added: ${file.name.slice(0, 24)}`;
+  $("#photoText").textContent = `${t("photo_added")}: ${file.name.slice(0, 24)}`;
   $("#photoLabel").classList.add("has-photo");
 });
 
@@ -102,7 +117,7 @@ $("#intakeForm").addEventListener("submit", async (e) => {
   err.hidden = true;
   const btn = $("#openBtn");
   btn.disabled = true;
-  btn.textContent = "Opening…";
+  btn.textContent = t("opening");
   try {
     const langOpt = $("#lang").selectedOptions[0];
     const { id } = await api("/api/cases", {
@@ -110,7 +125,7 @@ $("#intakeForm").addEventListener("submit", async (e) => {
       body: JSON.stringify({ text: $("#problem").value, language: langOpt.dataset.name, city: $("#city").value.trim(), state: $("#state").value.trim(), imageDataUrl: state.photo }),
     });
     state.photo = null;
-    $("#photoText").textContent = "Add a photo (optional)";
+    $("#photoText").textContent = t("photo_add");
     $("#photoLabel").classList.remove("has-photo");
     $("#photo").value = "";
     await openCase(id);
@@ -120,7 +135,7 @@ $("#intakeForm").addEventListener("submit", async (e) => {
     err.hidden = false;
   } finally {
     btn.disabled = false;
-    btn.textContent = "Open my case";
+    btn.textContent = t("open_case");
   }
 });
 
@@ -246,22 +261,51 @@ function renderCover(c) {
     else if (state.lastStatus === null && c.running === false && c.trace?.at(-1)?.kind === "done" && Date.now() - c.updatedAt < 4000) stamp.classList.add("slam");
   } else stamp.hidden = true;
   if (!c.running) state.lastStatus = c.status;
+  const printBtn = $("#printCaseBtn");
+  if (printBtn) printBtn.onclick = () => printFullCase(c);
+}
+
+// ---------- print full case file ----------
+// Builds a standalone printout: summary, next steps, evidence checklist, then every document,
+// each starting on its own page (see .print-area / break-before:page in styles.css @media print).
+function printFullCase(c) {
+  const area = $("#printArea");
+  if (!area) return;
+  const stepsHtml = (c.filing_steps || []).map((s) => `<li>${esc(s.step)}${s.url ? ` — ${esc(s.url)}` : ""}</li>`).join("");
+  const checklistHtml = (c.evidence_checklist || []).map((e) => `<li>${esc(e)}</li>`).join("");
+  const docsHtml = (c.documents || [])
+    .map((d) => `<section class="print-doc"><h2>${esc(d.title || shortTitle(d))}</h2><p class="muted">To: ${esc(d.addressed_to)}</p><div class="sheet">${md(d.content || "")}</div></section>`)
+    .join("");
+  area.innerHTML = `
+    <section class="print-cover">
+      <h1>${esc(c.title || c.id)}</h1>
+      <p class="muted">${esc(c.id)} · ${esc(c.primary_authority?.name || "")}</p>
+      ${c.summary_for_citizen ? `<h2>${esc(t("who_responsible"))}</h2><p>${esc(c.summary_for_citizen)}</p>` : ""}
+      ${stepsHtml ? `<h2>${esc(t("next_steps"))}</h2><ol>${stepsHtml}</ol>` : ""}
+      ${checklistHtml ? `<h2>${esc(t("keep_ready"))}</h2><ul>${checklistHtml}</ul>` : ""}
+    </section>
+    ${docsHtml}`;
+  area.hidden = false;
+  document.body.classList.add("printing-full-case");
+  const cleanup = () => { area.hidden = true; document.body.classList.remove("printing-full-case"); window.removeEventListener("afterprint", cleanup); };
+  window.addEventListener("afterprint", cleanup);
+  window.print();
 }
 
 // ---------- tabs ----------
 function renderTabs(c) {
   const tabs = [];
-  tabs.push({ id: "summary", label: "What to do" });
+  tabs.push({ id: "summary", label: t("what_to_do") });
   for (const d of c.documents) {
     const mark = d.review ? (d.review.ok ? ` <span class="ok" aria-label="passed checks">✓</span>` : ` <span class="bad" aria-label="has issues">!</span>`) : "";
     tabs.push({ id: `doc:${d.id}`, label: `${shortTitle(d)}${mark}` });
   }
-  tabs.push({ id: "deadlines", label: "Deadlines" });
-  if (!tabs.some((t) => t.id === state.tab)) state.tab = "summary";
-  $("#tabs").innerHTML = tabs.map((t) => `<button class="tab" role="tab" data-tab="${esc(t.id)}" aria-selected="${t.id === state.tab}">${t.label}</button>`).join("");
+  tabs.push({ id: "deadlines", label: t("deadlines_tab") });
+  if (!tabs.some((tab) => tab.id === state.tab)) state.tab = "summary";
+  $("#tabs").innerHTML = tabs.map((tab) => `<button class="tab" role="tab" data-tab="${esc(tab.id)}" aria-selected="${tab.id === state.tab}">${tab.label}</button>`).join("");
 }
 function shortTitle(d) {
-  return { complaint: "Complaint", rti: "RTI", first_appeal: "First appeal", second_appeal: "Second appeal", explainer: "Explainer" }[d.type] || d.title.split("—")[0].trim();
+  return { complaint: t("doc_complaint"), rti: t("doc_rti"), first_appeal: t("doc_first_appeal"), second_appeal: t("doc_second_appeal"), explainer: t("doc_explainer") }[d.type] || d.title.split("—")[0].trim();
 }
 $("#tabs").addEventListener("click", (e) => {
   const b = e.target.closest("[data-tab]");
@@ -284,18 +328,18 @@ function renderPanel(c) {
 function renderSummary(panel, c) {
   if (!c.summary_for_citizen) {
     panel.innerHTML = c.running
-      ? `<p class="muted">The caseworker is researching and drafting. Watch its steps on the left — your papers appear here as tabs as soon as they're written.</p>`
-      : `<p class="muted">No summary yet. ${c.status === "failed" ? "The caseworker stopped — see the log for why, then send a message to retry." : ""}</p>`;
+      ? `<p class="muted">${esc(t("summary_researching"))}</p>`
+      : `<p class="muted">${esc(t("summary_none"))} ${c.status === "failed" ? esc(t("summary_failed_hint")) : ""}</p>`;
     return;
   }
   const langCode = LANG_CODES[(c.user_language || "").toLowerCase()] || "en-IN";
   panel.innerHTML = `
-    <div class="toolbar"><button class="secondary" id="speakBtn" type="button">🔊 Read aloud</button><span class="spacer"></span>${c.mode === "demo" ? `<span class="muted" style="font-size:13px">Offline demo model</span>` : ""}</div>
+    <div class="toolbar"><button class="secondary" id="speakBtn" type="button">${esc(t("read_aloud"))}</button><span class="spacer"></span>${c.mode === "demo" ? `<span class="muted" style="font-size:13px">Offline demo model</span>` : ""}</div>
     <p class="summary-text" lang="${esc(langCode)}">${esc(c.summary_for_citizen)}</p>
-    ${c.primary_authority ? `<h4>Who is responsible</h4><p><strong>${esc(c.primary_authority.name)}</strong><br><span class="muted">${esc(c.primary_authority.why)}</span></p>` : ""}
-    <h4>Next steps</h4>
+    ${c.primary_authority ? `<h4>${esc(t("who_responsible"))}</h4><p><strong>${esc(c.primary_authority.name)}</strong><br><span class="muted">${esc(c.primary_authority.why)}</span></p>` : ""}
+    <h4>${esc(t("next_steps"))}</h4>
     <ol class="steps">${(c.filing_steps || []).map((s) => `<li>${esc(s.step)}${s.url ? ` — <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.url.replace(/^https?:\/\//, ""))}</a>` : ""}</li>`).join("")}</ol>
-    <h4>Keep these ready</h4>
+    <h4>${esc(t("keep_ready"))}</h4>
     <ul class="checklist">${(c.evidence_checklist || []).map((e, i) => `<li><label><input type="checkbox" data-k="${i}">${esc(e)}</label></li>`).join("")}</ul>`;
   $("#speakBtn").addEventListener("click", () => speak(c.summary_for_citizen, langCode));
   const key = `haq:check:${c.id}`;
@@ -359,8 +403,8 @@ function renderDoc(panel, c, doc) {
   const showTranslate = isOfficial && lang && !/^english$/i.test(lang) && !alreadyTranslated;
   panel.innerHTML = `
     <div class="toolbar">
-      ${editing ? `<button class="secondary" id="saveDoc" type="button">Save changes</button><button class="ghost" id="cancelDoc" type="button">Cancel</button>`
-                : `<button class="secondary" id="editDoc" type="button">Fill in / edit</button><button class="ghost" id="copyDoc" type="button">Copy text</button><button class="ghost" id="printDoc" type="button">Print / save PDF</button><button class="ghost" id="waDoc" type="button">Share on WhatsApp</button>${showTranslate ? `<button class="ghost" id="translateDoc" type="button" ${c.running ? "disabled" : ""}>Get a copy in ${esc(lang)}</button>` : ""}`}
+      ${editing ? `<button class="secondary" id="saveDoc" type="button">${esc(t("save_changes"))}</button><button class="ghost" id="cancelDoc" type="button">${esc(t("cancel"))}</button>`
+                : `<button class="secondary" id="editDoc" type="button">${esc(t("fill_edit"))}</button><button class="ghost" id="copyDoc" type="button">${esc(t("copy_text"))}</button><button class="ghost" id="printDoc" type="button">${esc(t("print_pdf"))}</button><button class="ghost" id="waDoc" type="button">${esc(t("share_wa"))}</button>${showTranslate ? `<button class="ghost" id="translateDoc" type="button" ${c.running ? "disabled" : ""}>${esc(t("get_copy_in"))} ${esc(lang)}</button>` : ""}`}
       <span class="spacer"></span><span class="muted" style="font-size:13px">To: ${esc(doc.addressed_to)}</span>
     </div>
     ${reviewHtml}
@@ -376,7 +420,7 @@ function renderDoc(panel, c, doc) {
     return;
   }
   $("#editDoc").onclick = () => { state.editing = doc.id; renderPanel(c); };
-  $("#copyDoc").onclick = async (e) => { await navigator.clipboard.writeText(plain(doc.content)); e.target.textContent = "Copied"; };
+  $("#copyDoc").onclick = async (e) => { await navigator.clipboard.writeText(plain(doc.content)); e.target.textContent = t("copied"); };
   $("#printDoc").onclick = () => window.print();
   $("#waDoc").onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(plain(doc.content).slice(0, 3500))}`, "_blank", "noopener");
   const tr = $("#translateDoc");
@@ -393,19 +437,19 @@ function renderDeadlines(panel, c) {
   const today = new Date().toISOString().slice(0, 10);
   const overdue = ds.some((d) => d.daysLeft < 0 && /rti_reply|bank_reply|cpgrams/.test(d.kind));
   panel.innerHTML = `
-    <h4>${c.filedAt ? `Filed on ${esc(c.filedAt)}` : "If you file today"}</h4>
+    <h4>${c.filedAt ? `${esc(t("filed_on"))} ${esc(c.filedAt)}` : esc(t("if_filed_today"))}</h4>
     ${ds.length ? `<ul class="deadlines">${ds.map((d) => {
       const cls = d.daysLeft < 0 ? "over" : d.daysLeft <= 5 ? "soon" : "";
       const left = d.daysLeft < 0 ? `${-d.daysLeft} days ago` : d.daysLeft === 0 ? "today" : `${d.daysLeft} days left`;
       return `<li><span class="date">${esc(d.date)}</span><span>${esc(d.label)}<span class="basis">${esc(d.basis)}</span></span><span class="left ${cls}">${left}</span></li>`;
-    }).join("")}</ul>` : `<p class="muted">Deadlines appear once the caseworker has planned them.</p>`}
+    }).join("")}</ul>` : `<p class="muted">${esc(t("deadlines_empty"))}</p>`}
     <div class="file-box">
       <label>Date you filed<input type="date" id="filedDate" value="${esc(c.filedAt || today)}" max="${today}"></label>
-      <button class="secondary" id="markFiled" type="button">${c.filedAt ? "Update filing date" : "Mark as filed"}</button>
-      ${c.filedAt && c.status !== "escalated" && c.status !== "resolved" ? `<button class="${overdue ? "primary danger" : "secondary"}" id="escalate" type="button">${overdue ? "No reply — draft my First Appeal" : "Escalate now"}</button>` : ""}
-      ${c.filedAt && c.status !== "resolved" ? `<button class="ghost" id="resolved" type="button">It got solved</button>` : ""}
+      <button class="secondary" id="markFiled" type="button">${c.filedAt ? esc(t("update_filed")) : esc(t("mark_filed"))}</button>
+      ${c.filedAt && c.status !== "escalated" && c.status !== "resolved" ? `<button class="${overdue ? "primary danger" : "secondary"}" id="escalate" type="button">${overdue ? esc(t("no_reply_appeal")) : esc(t("escalate_now"))}</button>` : ""}
+      ${c.filedAt && c.status !== "resolved" ? `<button class="ghost" id="resolved" type="button">${esc(t("resolved"))}</button>` : ""}
     </div>
-    <p class="muted" style="font-size:14px;margin-top:10px">Haq counts the days for you. When a reply is overdue, one tap asks the caseworker to write the appeal.</p>`;
+    <p class="muted" style="font-size:14px;margin-top:10px">${esc(t("deadlines_hint"))}</p>`;
   $("#markFiled").onclick = async () => {
     await api(`/api/cases/${encodeURIComponent(c.id)}/filed`, { method: "POST", body: JSON.stringify({ date: $("#filedDate").value }) });
     refresh(); loadCases();
