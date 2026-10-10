@@ -353,10 +353,14 @@ function renderDoc(panel, c, doc) {
   const r = doc.review;
   const reviewHtml = r ? (r.ok ? `<div class="review ok">✓ Passed the filing checklist: ${esc(r.checked.join(", "))}</div>` : `<div class="review bad">Needs fixing: ${esc(r.issues.join(" "))}</div>`) : "";
   const editing = state.editing === doc.id;
+  const lang = c.user_language || "";
+  const isOfficial = doc.type !== "explainer";
+  const alreadyTranslated = c.documents.some((d) => d.id !== doc.id && d.id.startsWith(`${doc.id}_`));
+  const showTranslate = isOfficial && lang && !/^english$/i.test(lang) && !alreadyTranslated;
   panel.innerHTML = `
     <div class="toolbar">
       ${editing ? `<button class="secondary" id="saveDoc" type="button">Save changes</button><button class="ghost" id="cancelDoc" type="button">Cancel</button>`
-                : `<button class="secondary" id="editDoc" type="button">Fill in / edit</button><button class="ghost" id="copyDoc" type="button">Copy text</button><button class="ghost" id="printDoc" type="button">Print / save PDF</button><button class="ghost" id="waDoc" type="button">Share on WhatsApp</button>`}
+                : `<button class="secondary" id="editDoc" type="button">Fill in / edit</button><button class="ghost" id="copyDoc" type="button">Copy text</button><button class="ghost" id="printDoc" type="button">Print / save PDF</button><button class="ghost" id="waDoc" type="button">Share on WhatsApp</button>${showTranslate ? `<button class="ghost" id="translateDoc" type="button" ${c.running ? "disabled" : ""}>Get a copy in ${esc(lang)}</button>` : ""}`}
       <span class="spacer"></span><span class="muted" style="font-size:13px">To: ${esc(doc.addressed_to)}</span>
     </div>
     ${reviewHtml}
@@ -375,6 +379,12 @@ function renderDoc(panel, c, doc) {
   $("#copyDoc").onclick = async (e) => { await navigator.clipboard.writeText(plain(doc.content)); e.target.textContent = "Copied"; };
   $("#printDoc").onclick = () => window.print();
   $("#waDoc").onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(plain(doc.content).slice(0, 3500))}`, "_blank", "noopener");
+  const tr = $("#translateDoc");
+  if (tr) tr.onclick = async () => {
+    tr.disabled = true;
+    try { await api(`/api/cases/${encodeURIComponent(c.id)}/translate`, { method: "POST", body: JSON.stringify({ docId: doc.id }) }); } catch (e) { alertInline(e.message); }
+    refresh(); loadCases();
+  };
 }
 const plain = (s) => s.replace(/\*\*(.+?)\*\*/g, "$1");
 

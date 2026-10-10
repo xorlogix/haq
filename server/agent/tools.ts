@@ -63,7 +63,9 @@ export function buildCaseTools(caseId: string) {
     name: "write_document",
     description:
       "Write (or overwrite) a document in the case folder as Markdown. Use for: complaint (to the responsible authority), rti (RTI application under Sec. 6(1)), first_appeal (Sec. 19(1)), letter, explainer. " +
-      "Official documents should be in English unless the citizen asks otherwise; leave clearly marked blanks like [Your full name] for details you don't know. Do not invent facts, reference numbers or officer names.",
+      "Official documents (complaint, rti, first_appeal, second_appeal, letter) are always written in English — every office accepts it. " +
+      "Leave clearly marked blanks like [Your full name] for details you don't know. Do not invent facts, reference numbers or officer names. " +
+      "Only an 'explainer' document is written in the citizen's own language — e.g. a faithful translation of an official document for the citizen's understanding, doc_id '<original_id>_<langcode>', keeping every [bracketed blank] unchanged and unfilled.",
     inputSchema: z.object({
       doc_id: z.string().regex(/^[a-z0-9_-]+$/).describe("Stable id, e.g. 'complaint', 'rti', 'first_appeal'"),
       type: z.enum(["complaint", "rti", "first_appeal", "second_appeal", "letter", "explainer"]),
@@ -90,7 +92,14 @@ export function buildCaseTools(caseId: string) {
       const doc = rec?.documents.find((d) => d.id === doc_id);
       const md = readDocument(caseId, doc_id);
       if (!doc || md == null) return { error: `No document '${doc_id}'. Saved: ${rec?.documents.map((d) => d.id).join(", ") || "none"}` };
-      const review = reviewDraft(doc.type, md);
+      // For translations ("<original_id>_<langcode>"), compare against the English original so the
+      // checklist can confirm every [bracketed blank] was kept, not filled in or translated.
+      let sourceMd: string | null = null;
+      if (doc.type === "explainer") {
+        const originalId = rec?.documents.find((d) => d.id !== doc_id && doc_id.startsWith(`${d.id}_`))?.id;
+        sourceMd = originalId ? readDocument(caseId, originalId) : null;
+      }
+      const review = reviewDraft(doc.type, md, sourceMd);
       updateCase(caseId, (r) => {
         const d = r.documents.find((x) => x.id === doc_id);
         if (d) d.review = review;

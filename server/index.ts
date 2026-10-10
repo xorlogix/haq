@@ -136,6 +136,45 @@ app.post("/api/cases/:id/escalate", (req, res) => {
   res.json({ ok: true });
 });
 
+// Language code suffix for a translated doc_id, e.g. "Hindi" -> "hi". Falls back to the
+// first 2 letters if the language isn't in the map (keeps doc ids short and stable).
+const LANG_CODE: Record<string, string> = {
+  hindi: "hi",
+  assamese: "as",
+  bengali: "bn",
+  tamil: "ta",
+  telugu: "te",
+  marathi: "mr",
+  gujarati: "gu",
+  kannada: "kn",
+  malayalam: "ml",
+  punjabi: "pa",
+  odia: "or",
+  urdu: "ur",
+};
+
+app.post("/api/cases/:id/translate", (req, res) => {
+  const c = loadCase(req.params.id);
+  if (!c) return res.status(404).json({ error: "Case not found" });
+  if (isRunning(c.id)) return res.status(409).json({ error: "The caseworker is still working. Wait for it to finish." });
+  const docId = String(req.body?.docId ?? "").trim();
+  const doc = c.documents.find((d) => d.id === docId);
+  if (!doc) return res.status(404).json({ error: "Document not found" });
+  const lang = c.user_language || "";
+  if (!lang || /^english$/i.test(lang)) return res.status(400).json({ error: "The citizen's language is English — no translation needed." });
+  const code = LANG_CODE[lang.toLowerCase()] || lang.slice(0, 2).toLowerCase();
+  const translatedId = `${docId}_${code}`;
+  if (c.documents.some((d) => d.id === translatedId)) return res.status(409).json({ error: "That translation already exists." });
+  followUp(
+    c.id,
+    `Write a faithful translation of the "${docId}" document into ${lang} for the citizen's own understanding. ` +
+      `Save it with write_document using doc_id "${translatedId}" and type "explainer". Keep every [bracketed blank] exactly as in the English original — do not fill them in or translate the words inside the brackets. ` +
+      `Add one line at the very top, in ${lang}, saying this is a translation for the citizen's understanding and that the English original ("${docId}") is the one to file. ` +
+      `Do not change the English original. Call review_draft on "${translatedId}" afterwards.`,
+  );
+  res.json({ ok: true });
+});
+
 app.put("/api/cases/:id/documents/:docId", (req, res) => {
   const c = loadCase(req.params.id);
   const doc = c?.documents.find((d) => d.id === req.params.docId);

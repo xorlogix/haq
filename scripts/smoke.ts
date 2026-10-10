@@ -28,6 +28,13 @@ for (const s of scenarios) {
   const err = c.trace.find((t) => t.kind === "error"); if (err) console.log("  ERROR:", err.text);
   if (!ok) failed++;
   if (s === scenarios[0]) {
+    // The official RTI draft must be English even though the citizen wrote Hindi — "Get it in my language"
+    // only translates a citizen-facing copy, it never changes what gets filed.
+    const rtiEnglish = readDocument(id, "rti") ?? "";
+    const rtiIsEnglish = !/[ऀ-ॿ]/.test(rtiEnglish);
+    console.log(`  [${rtiIsEnglish ? "PASS" : "FAIL"}] official rti draft is in English (not the citizen's Hindi)`);
+    if (!rtiIsEnglish) failed++;
+
     followUp(id, "Escalate: the RTI got no reply in 30 days. Draft the first appeal.");
     await new Promise((r) => setTimeout(r, 50));
     await wait(id);
@@ -36,6 +43,33 @@ for (const s of scenarios) {
     console.log(`  [${appeal?.review?.ok ? "PASS" : "FAIL"}] escalation → first_appeal`, appeal?.review?.issues ?? "");
     if (!appeal?.review?.ok) failed++;
     console.log(readDocument(id, "rti")?.slice(0, 600));
+
+    // "Get a copy in Hindi" — the citizen asks for a translated copy of the RTI for their own understanding.
+    // (Mirrors the message POST /api/cases/:id/translate sends via followUp().)
+    followUp(
+      id,
+      `Write a faithful translation of the "rti" document into Hindi for the citizen's own understanding. ` +
+        `Save it with write_document using doc_id "rti_hi" and type "explainer". Keep every [bracketed blank] exactly as in the English original — do not fill them in or translate the words inside the brackets. ` +
+        `Add one line at the very top, in Hindi, saying this is a translation for the citizen's understanding and that the English original ("rti") is the one to file. ` +
+        `Do not change the English original. Call review_draft on "rti_hi" afterwards.`,
+    );
+    await new Promise((r) => setTimeout(r, 50));
+    await wait(id);
+    const c3 = loadCase(id)!;
+    const translated = c3.documents.find((d) => d.id === "rti_hi");
+    const translatedOk = !!translated && translated.type === "explainer" && !!translated.review?.ok;
+    console.log(`  [${translatedOk ? "PASS" : "FAIL"}] translate → rti_hi (explainer)`, translated?.review?.issues ?? (translated ? "" : "not created"));
+    if (!translatedOk) failed++;
+    if (translated) {
+      const originalBlanks = (readDocument(id, "rti")?.match(/\[[^\]]{2,80}\]/g) ?? []).length;
+      const translatedBlanks = (readDocument(id, "rti_hi")?.match(/\[[^\]]{2,80}\]/g) ?? []).length;
+      const blanksKept = originalBlanks > 0 && translatedBlanks === originalBlanks;
+      console.log(`  [${blanksKept ? "PASS" : "FAIL"}] translation keeps all ${originalBlanks} blanks (found ${translatedBlanks})`);
+      if (!blanksKept) failed++;
+      const rtiOriginalUnchanged = !/[ऀ-ॿ]/.test(readDocument(id, "rti") ?? "");
+      console.log(`  [${rtiOriginalUnchanged ? "PASS" : "FAIL"}] English rti original unchanged by the translation`);
+      if (!rtiOriginalUnchanged) failed++;
+    }
   }
 }
 process.exit(failed ? 1 : 0);

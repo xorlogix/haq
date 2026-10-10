@@ -285,6 +285,42 @@ Date: [Date]
 [Signature]`;
 }
 
+/**
+ * Offline-demo translation: a short, faithful Hindi (or other language) explainer of an
+ * official document, keeping every [bracketed blank] exactly as the English original — never
+ * filled in or translated — and a top line marking it as a translation, not the filing copy.
+ */
+function translationMd(sourceId: string, targetLang: string, sourceContent: string): string {
+  const blanks = [...sourceContent.matchAll(/\[[^\]]{2,80}\]/g)].map((m) => m[0]);
+  const docLabel = { complaint: "complaint", rti: "RTI application", first_appeal: "First Appeal", letter: "letter" }[sourceId.replace(/_.*$/, "")] ?? "document";
+  if (targetLang === "Hindi") {
+    return `*यह आपकी समझ के लिए अनुवाद है — फाइल करने के लिए अंग्रेज़ी मूल ("${sourceId}") का उपयोग करें।*
+
+यह आपके ${docLabel} का हिंदी अनुवाद है, ताकि आप समझ सकें कि इसमें क्या लिखा है। इसे वैसे ही फाइल न करें — अंग्रेज़ी वाली कॉपी ही संबंधित कार्यालय को भेजें।
+
+मुख्य बातें:
+- यह आवेदन/शिकायत आपकी समस्या के समाधान के लिए ज़िम्मेदार कार्यालय को भेजी जा रही है।
+- इसमें आपकी समस्या, स्थान और मांगी गई राहत/जानकारी का विवरण है।
+- नीचे दी गई खाली जगहें ([ ] में) आपको खुद भरनी हैं — अंग्रेज़ी मूल में भी यही खाली जगहें हैं:
+
+${blanks.length ? blanks.map((b) => `- ${b}`).join("\n") : "- (कोई खाली जगह नहीं मिली)"}
+
+कृपया अंग्रेज़ी मूल प्रति ही संबंधित कार्यालय में जमा करें।`;
+  }
+  return `*This is a translation for your understanding — file the English original ("${sourceId}").*
+
+This is a ${targetLang} translation of your ${docLabel}, so you can understand what it says. Do not file this copy — send the English original to the office.
+
+Key points:
+- This document is being sent to the office responsible for fixing your problem.
+- It describes your problem, location, and the relief/information requested.
+- The blanks below (in [ ]) are yours to fill in — the English original has the same blanks:
+
+${blanks.length ? blanks.map((b) => `- ${b}`).join("\n") : "- (no blanks found)"}
+
+Please file the English original with the office.`;
+}
+
 interface Ctx {
   userText: string;
   lang: Lang;
@@ -424,6 +460,31 @@ export function createDemoModel(caseRef: string): AgentModel {
       const isFollowUp = lastUserIdx > 0 && msgs.slice(0, lastUserIdx).some((m) => m.role === "assistant");
 
       if (isFollowUp) {
+        const translateMatch = /translation of the "([a-z0-9_-]+)".*into ([A-Za-z]+).*doc_id "([a-z0-9_-]+)"/is.exec(followUpText);
+        if (translateMatch) {
+          const [, sourceId, targetLang, translatedId] = translateMatch;
+          switch (step) {
+            case 0:
+              yield* call("read_case_file", { doc_id: sourceId }, `Reading "${sourceId}" to translate it faithfully into ${targetLang}. `);
+              return;
+            case 1: {
+              const sourceContent = (run.read_case_file?.[0]?.content as string | undefined) ?? "";
+              yield* call(
+                "write_document",
+                { doc_id: translatedId, type: "explainer", title: `${targetLang} copy for your understanding`, language: targetLang, addressed_to: "(for your understanding only — not for filing)", content: translationMd(sourceId, targetLang, sourceContent) },
+                "Writing a faithful translation, keeping every blank exactly as in the English original. ",
+              );
+              return;
+            }
+            case 2:
+              yield* call("review_draft", { doc_id: translatedId });
+              return;
+            default:
+              yield* say(targetLang === "Hindi" ? "अनुवाद तैयार है और जाँच-सूची से पास है।" : `The ${targetLang} copy is ready and passes the checklist.`);
+              yield { type: "finish", reason: "stop" };
+              return;
+          }
+        }
         const escalate = /escalat|appeal|no reply|not replied|jawab nahi|जवाब नहीं|deadline|30 days|overdue/i.test(followUpText);
         if (!escalate) {
           yield* say(
