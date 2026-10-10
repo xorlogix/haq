@@ -19,7 +19,7 @@ function rtiBody(md: string): string {
     .join("\n");
 }
 
-export function reviewDraft(type: string, md: string, sourceMd?: string | null): ReviewResult {
+export function reviewDraft(type: string, md: string, sourceMd?: string | null, docId?: string): ReviewResult {
   const issues: string[] = [];
   const checked: string[] = [];
   const text = md.toLowerCase();
@@ -76,7 +76,23 @@ export function reviewDraft(type: string, md: string, sourceMd?: string | null):
   }
 
   if (type === "explainer") {
-    need(/\[[^\]]{2,80}\]/.test(md) === /\[[^\]]{2,80}\]/.test(sourceMd ?? md), "Keeps blanks", "A translation must keep every [bracketed blank] exactly as the original — don't fill them in or translate the words inside the brackets.");
+    if (sourceMd != null) {
+      // A translation of an existing official document — must keep every blank untouched.
+      need(/\[[^\]]{2,80}\]/.test(md) === /\[[^\]]{2,80}\]/.test(sourceMd), "Keeps blanks", "A translation must keep every [bracketed blank] exactly as the original — don't fill them in or translate the words inside the brackets.");
+    }
+    if (docId === "notice_explainer" || /notice/i.test(docId ?? "")) {
+      // "I got a notice" explainer: must say who sent it, and either a real deadline or that none was found.
+      need(
+        /sent by|from the|issued by|notice from|department|bank|court|office|authority|भेजा|जारी|विभाग|बैंक|न्यायालय|अदालत|कार्यालय/i.test(md),
+        "States who sent it",
+        "Say clearly who sent the notice (which department, bank or court).",
+      );
+      need(
+        /deadline|due|last date|respond by|within \d+ days|not clearly visible|no deadline|not (mentioned|visible)|समय.?सीमा|अंतिम तिथि|कोई समय-सीमा नहीं|स्पष्ट नहीं/i.test(md),
+        "States deadline or says none found",
+        "State the deadline mentioned in the notice, or say plainly that no deadline is visible in the image.",
+      );
+    }
   }
 
   return { ok: issues.length === 0, issues, checked };

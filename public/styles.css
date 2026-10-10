@@ -110,6 +110,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ghost:hover { background: var(--ink-wash); }
 .danger { border-color: var(--stamp); background: var(--stamp); color: #fff; }
 .form-error { margin: 0; color: var(--stamp); font-weight: 600; }
+.notice-hint { color: var(--pencil); font-weight: 500; }
+
+/* Intake mode toggle: "Describe a problem" / "Explain a notice I received" */
+.intake-mode-toggle { display: flex; gap: 8px; margin: 4px 0 14px; flex-wrap: wrap; }
+.intake-mode-btn { height: 40px; padding: 0 16px; border-radius: 999px; border: 2px solid var(--rule); background: var(--paper); font-weight: 600; cursor: pointer; color: var(--pencil); }
+.intake-mode-btn[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); background: var(--ink-wash); }
 
 .examples { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .examples-title { margin: 0 6px 0 0; color: var(--pencil); font-size: 15px; }
@@ -151,11 +157,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
   position: relative; background: var(--paper); border-radius: var(--radius-lg); padding: 20px 24px; box-shadow: var(--shadow-paper);
   border-left: 10px solid var(--ink); overflow: hidden;
 }
-.case-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; color: var(--pencil); }
+.case-meta { display: flex; gap: 14px; flex-wrap: wrap; font-size: 14px; color: var(--pencil); padding-right: 150px; }
 .case-id { font-family: var(--type); font-weight: 700; color: var(--ink); }
 .case-title { font-size: clamp(24px, 2.6vw, 32px); line-height: 1.15; margin: 6px 0 4px; padding-right: 150px; color: var(--text); }
 .case-authority { margin: 0; color: var(--pencil); padding-right: 150px; }
-@media (max-width: 600px) { .case-title, .case-authority { padding-right: 0; } }
+/* Below this width the stamp drops out of the top-right corner (static, below the text) so it
+   never overlaps the case-id/model line or the title, at any width. */
+@media (max-width: 820px) { .case-meta, .case-title, .case-authority { padding-right: 0; } }
 .print-case-btn { margin-top: 10px; }
 
 /* The one memorable moment: the rubber stamp */
@@ -171,7 +179,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .stamp.filed { color: var(--ledger); }
 .stamp.slam { animation: slam .42s cubic-bezier(.2, 1.6, .4, 1) both; }
 @keyframes slam { 0% { transform: rotate(-9deg) scale(2.4); opacity: 0; } 70% { opacity: .95; } 100% { transform: rotate(-9deg) scale(1); opacity: .88; } }
-@media (max-width: 600px) { .stamp { position: static; display: inline-block; margin-top: 10px; } }
+@media (max-width: 820px) { .stamp { position: static; display: inline-block; margin-top: 10px; } }
 
 .emergency { margin-top: 14px; background: var(--stamp); color: #fff; padding: 14px 18px; border-radius: var(--radius-sm); font-weight: 700; font-size: 18px; }
 
@@ -195,6 +203,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .log-list li.pass::before { background: var(--ledger); border-color: var(--ledger); color: #fff; }
 .log-list li.fail::before { background: var(--stamp); border-color: var(--stamp); color: #fff; }
 .log-list li.thought { color: var(--pencil); font-style: italic; }
+.log-list li.thought p { margin: 0 0 6px; }
+.log-list li.thought p:last-child { margin-bottom: 0; }
+.log-list li.thought ol, .log-list li.thought ul { margin: 0 0 6px; padding-left: 1.4em; }
+.log-list li.thought .blank { background: none; border-bottom: none; }
 .log-list li.user { color: var(--ink); font-weight: 600; }
 .log-list li.user::before { content: "you"; width: auto; padding: 0 4px; border-radius: 6px; font-size: 10px; left: -16px; }
 .log-list li.err { color: var(--stamp); font-weight: 600; }

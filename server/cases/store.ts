@@ -36,7 +36,7 @@ export interface CaseRecord {
   status: CaseStatus;
   mode: "live" | "demo";
   model: string;
-  input: { text: string; language: string; state?: string; city?: string; hasImage: boolean; contactName?: string };
+  input: { text: string; language: string; state?: string; city?: string; hasImage: boolean; contactName?: string; intakeMode?: "problem" | "notice" };
   title?: string;
   category?: string;
   urgency?: "low" | "medium" | "high" | "emergency";

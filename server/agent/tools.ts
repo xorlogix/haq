@@ -99,7 +99,7 @@ export function buildCaseTools(caseId: string) {
         const originalId = rec?.documents.find((d) => d.id !== doc_id && doc_id.startsWith(`${d.id}_`))?.id;
         sourceMd = originalId ? readDocument(caseId, originalId) : null;
       }
-      const review = reviewDraft(doc.type, md, sourceMd);
+      const review = reviewDraft(doc.type, md, sourceMd, doc_id);
       updateCase(caseId, (r) => {
         const d = r.documents.find((x) => x.id === doc_id);
         if (d) d.review = review;

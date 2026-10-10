@@ -31,9 +31,14 @@
       <h1 id="intakeTitle" data-i18n="intake_title">What's wrong?</h1>
       <p class="lede" data-i18n="intake_lede">Say it or type it in your own language. Haq finds the office responsible, writes your complaint and RTI, and tells you exactly what to do next.</p>
 
+      <div class="intake-mode-toggle" role="group" aria-label="What do you want to do">
+        <button type="button" class="intake-mode-btn" id="modeProblem" data-mode="problem" aria-pressed="true" data-i18n="mode_problem">Describe a problem</button>
+        <button type="button" class="intake-mode-btn" id="modeNotice" data-mode="notice" aria-pressed="false" data-i18n="mode_notice">Explain a notice I received</button>
+      </div>
+
       <form id="intakeForm" class="intake-form" autocomplete="off">
         <div class="speak">
-          <label for="problem" class="sr-only" data-i18n="problem_label">Describe your problem</label>
+          <label for="problem" class="sr-only" id="problemLabel" data-i18n="problem_label">Describe your problem</label>
           <textarea id="problem" name="problem" rows="5" required minlength="8"
             placeholder="e.g. मेरे घर के सामने सड़क पर बड़ा गड्ढा है, 3 हफ़्ते से — कल एक स्कूटर वाला गिर गया।"></textarea>
           <button type="button" id="micBtn" class="mic" aria-pressed="false" aria-label="Speak your problem">
@@ -75,6 +80,7 @@
           </label>
           <button type="submit" class="primary" id="openBtn" data-i18n="open_case">Open my case</button>
         </div>
+        <p id="noticeHint" class="form-error notice-hint" hidden data-i18n="notice_hint">A photo of the notice is required so Haq can read it.</p>
         <p id="formError" class="form-error" role="alert" hidden></p>
       </form>
 

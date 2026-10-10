@@ -321,6 +321,41 @@ ${blanks.length ? blanks.map((b) => `- ${b}`).join("\n") : "- (no blanks found)"
 Please file the English original with the office.`;
 }
 
+/**
+ * Offline-demo "I got a notice" explainer. The scripted demo model can't actually read an
+ * attached photo, so — faithful to the rule never to guess what a notice says — it produces a
+ * generic explainer that plainly states the sender and deadline could not be confidently read
+ * from the image, and tells the citizen what to do about that, rather than inventing details.
+ */
+function noticeExplainerMd(lang: Lang): string {
+  if (lang === "Hindi") {
+    return `यह एक सामान्य व्याख्या है — ऑफ़लाइन डेमो मॉडल फ़ोटो को वास्तव में नहीं पढ़ सकता।
+
+**यह नोटिस किसने भेजा:** फ़ोटो से भेजने वाले कार्यालय/बैंक/अदालत का नाम स्पष्ट रूप से नहीं पढ़ा जा सका। कृपया नोटिस के ऊपरी हिस्से में दिए गए कार्यालय का नाम और पता खुद जांचें।
+
+**समय-सीमा:** फ़ोटो से कोई समय-सीमा स्पष्ट नहीं है — not clearly visible। नोटिस में दी गई तारीख को ध्यान से देखें।
+
+**क्या करें:**
+1. नोटिस को किसी साफ़ रोशनी में दोबारा फ़ोटो खींचकर अपलोड करें ताकि सही जानकारी मिल सके।
+2. नोटिस पर दिए गए कार्यालय/बैंक/अदालत के संपर्क नंबर पर कॉल करके पुष्टि करें।
+3. अगर यह अदालत से जुड़ा है, तो मुफ़्त कानूनी सहायता के लिए NALSA हेल्पलाइन 15100 पर संपर्क करें।
+
+Haq गलत जानकारी गढ़ने के बजाय यह बताना बेहतर समझता है कि फ़ोटो से स्पष्ट जानकारी नहीं मिली।`;
+  }
+  return `This is a generic explainer — the offline demo model cannot actually read the attached photo.
+
+**Who sent this notice:** The sending office/bank/court could not be confidently read from the image. Please check the letterhead and address printed at the top of the notice yourself.
+
+**Deadline:** No deadline is clearly visible from the image — not clearly visible. Look carefully at any date printed on the notice.
+
+**What to do:**
+1. Re-photograph the notice in good light and upload it again so Haq can read it properly.
+2. Call the contact number printed on the notice to confirm what it says.
+3. If this is from a court, contact your District Legal Services Authority for free legal aid (NALSA helpline 15100).
+
+Haq would rather say the image wasn't clearly readable than invent what the notice says.`;
+}
+
 interface Ctx {
   userText: string;
   lang: Lang;
@@ -455,6 +490,44 @@ export function createDemoModel(caseRef: string): AgentModel {
         laws: (all.lookup_law?.[0]?.provisions ?? []).slice(0, 2).map((p: any) => p.title),
         caseRef,
       };
+
+      const isNoticeCase = !lastUserIdx && /received a government, bank or court notice/i.test(firstText);
+      if (isNoticeCase) {
+        switch (step) {
+          case 0:
+            yield* call("write_document", { doc_id: "notice_explainer", type: "explainer", title: "What this notice means", language: ctx.lang, addressed_to: "(for your understanding only — not for filing)", content: noticeExplainerMd(ctx.lang) }, ctx.lang === "Hindi" ? "फ़ोटो देख रहा हूँ और नोटिस समझाने की तैयारी कर रहा हूँ। " : "Reading the photo and preparing a plain-language explanation of the notice. ");
+            return;
+          case 1:
+            yield* call("review_draft", { doc_id: "notice_explainer" });
+            return;
+          default: {
+            if (!run.finalize_case) {
+              yield* call("finalize_case", {
+                title: ctx.lang === "Hindi" ? "प्राप्त नोटिस की व्याख्या" : "Notice received — explained",
+                category: "notice",
+                urgency: "medium",
+                user_language: ctx.lang,
+                summary_for_citizen:
+                  ctx.lang === "Hindi"
+                    ? "आपने जो नोटिस भेजा, हक़ ने उसे समझाने की कोशिश की है। कृपया 'Explainer' टैब में पूरी जानकारी देखें। अगर फ़ोटो साफ़ नहीं थी, तो कृपया बेहतर रोशनी में दोबारा फ़ोटो लेकर अपलोड करें।"
+                    : "Haq has read the notice you shared and explained it in the 'Explainer' tab. If the photo wasn't clear enough, please re-photograph it in better light and upload again.",
+                primary_authority_id: ctx.authorityId,
+                primary_authority_why: "Best match based on the little that could be read from the notice; verify against the letterhead yourself.",
+                filing_steps:
+                  ctx.lang === "Hindi"
+                    ? [{ step: "व्याख्या (Explainer) टैब में पूरा विवरण पढ़ें।" }, { step: "नोटिस पर दिए गए संपर्क नंबर से पुष्टि करें।" }]
+                    : [{ step: "Read the full explanation in the Explainer tab." }, { step: "Confirm the details by calling the number printed on the notice." }],
+                evidence_checklist: ctx.lang === "Hindi" ? ["नोटिस की स्पष्ट फ़ोटो", "जवाब भेजने की रसीद (अगर भेजें)"] : ["A clear photo of the notice", "Proof of any reply you send"],
+                emergency_note: null,
+              });
+              return;
+            }
+            yield* say(ctx.lang === "Hindi" ? "नोटिस की व्याख्या तैयार है और जाँच-सूची से पास है।" : "The notice explainer is ready and passes the checklist.");
+            yield { type: "finish", reason: "stop" };
+          }
+        }
+        return;
+      }
 
       const followUpText = lastUserIdx > 0 && lastUser ? textOf(lastUser) : "";
       const isFollowUp = lastUserIdx > 0 && msgs.slice(0, lastUserIdx).some((m) => m.role === "assistant");

@@ -88,6 +88,24 @@ function attachMic(button, field, getLang, labelEl) {
 attachMic($("#micBtn"), $("#problem"), () => $("#lang").value, $("#micLabel"));
 attachMic($("#followMic"), $("#followText"), () => LANG_CODES[(state.data?.user_language || "").toLowerCase()] || $("#lang").value);
 
+// ---------- intake mode: "Describe a problem" / "Explain a notice I received" ----------
+let intakeMode = "problem";
+function applyIntakeMode() {
+  const isNotice = intakeMode === "notice";
+  $("#modeProblem").setAttribute("aria-pressed", String(!isNotice));
+  $("#modeNotice").setAttribute("aria-pressed", String(isNotice));
+  const problem = $("#problem");
+  const problemLabel = $("#problemLabel");
+  problem.required = !isNotice;
+  problem.placeholder = isNotice ? t("problem_placeholder_notice") : "e.g. मेरे घर के सामने सड़क पर बड़ा गड्ढा है, 3 हफ़्ते से — कल एक स्कूटर वाला गिर गया।";
+  problemLabel.textContent = t(isNotice ? "problem_label_notice" : "problem_label");
+  $("#noticeHint").hidden = !isNotice;
+  $("#photoLabel").classList.toggle("required", isNotice);
+}
+$("#modeProblem").addEventListener("click", () => { intakeMode = "problem"; applyIntakeMode(); });
+$("#modeNotice").addEventListener("click", () => { intakeMode = "notice"; applyIntakeMode(); });
+document.addEventListener("haq:lang-changed", applyIntakeMode);
+
 // ---------- photo: downscale on device so it uploads fast on 3G ----------
 $("#photo").addEventListener("change", async (e) => {
   const file = e.target.files?.[0];
@@ -115,6 +133,11 @@ $("#intakeForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const err = $("#formError");
   err.hidden = true;
+  if (intakeMode === "notice" && !state.photo) {
+    err.textContent = t("notice_hint");
+    err.hidden = false;
+    return;
+  }
   const btn = $("#openBtn");
   btn.disabled = true;
   btn.textContent = t("opening");
@@ -122,7 +145,7 @@ $("#intakeForm").addEventListener("submit", async (e) => {
     const langOpt = $("#lang").selectedOptions[0];
     const { id } = await api("/api/cases", {
       method: "POST",
-      body: JSON.stringify({ text: $("#problem").value, language: langOpt.dataset.name, city: $("#city").value.trim(), state: $("#state").value.trim(), imageDataUrl: state.photo }),
+      body: JSON.stringify({ text: $("#problem").value, language: langOpt.dataset.name, city: $("#city").value.trim(), state: $("#state").value.trim(), imageDataUrl: state.photo, mode: intakeMode }),
     });
     state.photo = null;
     $("#photoText").textContent = t("photo_add");
@@ -214,7 +237,7 @@ function onEvent(ev) {
     return;
   } else if (ev.kind === "thought") {
     li.className = "thought";
-    li.textContent = ev.text;
+    li.innerHTML = md(ev.text || "");
   } else if (ev.kind === "user") {
     li.className = "user";
     li.textContent = ev.text;
@@ -262,7 +285,10 @@ function renderCover(c) {
   } else stamp.hidden = true;
   if (!c.running) state.lastStatus = c.status;
   const printBtn = $("#printCaseBtn");
-  if (printBtn) printBtn.onclick = () => printFullCase(c);
+  if (printBtn) {
+    printBtn.hidden = !!c.running;
+    printBtn.onclick = () => printFullCase(c);
+  }
 }
 
 // ---------- print full case file ----------
@@ -484,6 +510,7 @@ $("#followForm").addEventListener("submit", async (e) => {
 });
 
 // ---------- boot ----------
+applyIntakeMode();
 loadStatus();
 loadCases();
 if (location.hash.length > 1) openCase(decodeURIComponent(location.hash.slice(1)));

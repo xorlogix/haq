@@ -164,18 +164,29 @@ function friendlyError(msg: string): string {
 
 export function startCase(
   caseId: string,
-  intake: { text: string; language: string; state?: string; city?: string; contactName?: string },
+  intake: { text: string; language: string; state?: string; city?: string; contactName?: string; intakeMode?: "problem" | "notice" },
   image?: { base64: string; mediaType: string },
 ): void {
-  const lines = [
-    "A citizen needs help. Open a case and prepare everything they need.",
-    `Case ID: ${caseId}`,
-    `Problem: ${intake.text}`,
-    `State: ${intake.state || "not given"}`,
-    `City: ${intake.city || "not given"}`,
-    `Preferred language: ${intake.language || "same as the problem text"}`,
-    image ? "A photo of the problem is attached as evidence." : "No photo attached.",
-  ];
+  const lines =
+    intake.intakeMode === "notice"
+      ? [
+          "A citizen received a government, bank or court notice they don't understand and needs it explained. Open a case for it.",
+          `Case ID: ${caseId}`,
+          "A photo of the notice is attached — read it carefully.",
+          intake.text ? `Anything else the citizen told you: ${intake.text}` : "The citizen did not add any extra context.",
+          `State: ${intake.state || "not given"}`,
+          `City: ${intake.city || "not given"}`,
+          `Preferred language: ${intake.language || "same as any text the citizen wrote, else Hindi"}`,
+        ]
+      : [
+          "A citizen needs help. Open a case and prepare everything they need.",
+          `Case ID: ${caseId}`,
+          `Problem: ${intake.text}`,
+          `State: ${intake.state || "not given"}`,
+          `City: ${intake.city || "not given"}`,
+          `Preferred language: ${intake.language || "same as the problem text"}`,
+          image ? "A photo of the problem is attached as evidence." : "No photo attached.",
+        ];
   const parts: AgentMessagePart[] = [{ type: "text", text: lines.join("\n") }];
   if (image) parts.push({ type: "image", image: image.base64, mediaType: image.mediaType });
   const msg: AgentMessage = { id: `u_${Date.now()}`, role: "user", content: parts, createdAt: Date.now() };

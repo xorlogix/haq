@@ -72,4 +72,28 @@ for (const s of scenarios) {
     }
   }
 }
+
+// "I got a notice" mode: no problem text required, a photo stands in for the notice.
+{
+  const id = newCaseId();
+  createCase({
+    id,
+    mode: currentCredentials().mode,
+    model: modelLabel(),
+    input: { text: "", language: "Hindi", state: "Assam", city: "Guwahati", hasImage: true, intakeMode: "notice" },
+  });
+  await new Promise((r) => setTimeout(r, 10));
+  startCase(id, { text: "", language: "Hindi", state: "Assam", city: "Guwahati", intakeMode: "notice" }, { base64: "Zm9v", mediaType: "image/jpeg" });
+  await new Promise((r) => setTimeout(r, 50));
+  await wait(id);
+  const c = loadCase(id)!;
+  const explainer = c.documents.find((d) => d.id === "notice_explainer");
+  const ok = c.status === "ready" && !!c.summary_for_citizen && !!explainer && explainer.type === "explainer" && !!explainer.review?.ok;
+  console.log(`\n[${ok ? "PASS" : "FAIL"}] notice mode → ${id} ${c.title}`);
+  console.log("  docs:", c.documents.map((d) => `${d.id}(${d.review?.ok ? "✓" : "✗ " + d.review?.issues.join("|")})`).join(", "));
+  console.log("  trace:", c.trace.filter((t) => t.kind === "tool-start").map((t) => t.tool).join(" → "));
+  console.log("  summary:", c.summary_for_citizen?.slice(0, 160));
+  const err = c.trace.find((t) => t.kind === "error"); if (err) console.log("  ERROR:", err.text);
+  if (!ok) failed++;
+}
 process.exit(failed ? 1 : 0);

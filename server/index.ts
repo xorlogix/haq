@@ -23,8 +23,14 @@ app.get("/api/status", (_req, res) => {
 });
 
 app.post("/api/cases", (req, res) => {
-  const { text, language, state, city, imageDataUrl, contactName } = req.body ?? {};
-  if (typeof text !== "string" || text.trim().length < 8) {
+  const { text, language, state, city, imageDataUrl, contactName, mode: intakeModeRaw } = req.body ?? {};
+  const intakeMode = intakeModeRaw === "notice" ? "notice" : "problem";
+  const trimmedText = typeof text === "string" ? text.trim().slice(0, 4000) : "";
+  if (intakeMode === "notice") {
+    if (typeof imageDataUrl !== "string") {
+      return res.status(400).json({ error: "Attach a photo of the notice — Haq reads it to tell you what it says." });
+    }
+  } else if (trimmedText.length < 8) {
     return res.status(400).json({ error: "Describe the problem in a sentence or two (what, where, since when)." });
   }
   const id = newCaseId();
@@ -32,10 +38,10 @@ app.post("/api/cases", (req, res) => {
     id,
     mode: currentCredentials().mode,
     model: modelLabel(),
-    input: { text: text.trim().slice(0, 4000), language: language ?? "", state, city, hasImage: !!imageDataUrl, contactName },
+    input: { text: trimmedText, language: language ?? "", state, city, hasImage: !!imageDataUrl, contactName, intakeMode },
   });
   const image = typeof imageDataUrl === "string" ? saveImage(id, imageDataUrl) : null;
-  startCase(id, { text: text.trim().slice(0, 4000), language, state, city, contactName }, image ?? undefined);
+  startCase(id, { text: trimmedText, language, state, city, contactName, intakeMode }, image ?? undefined);
   res.status(201).json({ id });
 });
 
