@@ -48,7 +48,7 @@
       </div>
       <div class="hero-vignette" id="heroVignette" aria-hidden="true">
         <div class="vig-folder">
-          <div class="vig-tape" id="vigTape"></div>
+          <div class="vig-folder-tab">CASE FILE · HAQ-2026</div>
           <div class="vig-cover vig-cover-back"></div>
           <div class="vig-letter" id="vigLetter">
             <div class="vig-letter-lines" id="vigLetterLines"></div>
@@ -57,9 +57,10 @@
               <li data-i18n="check_law">Law section cited</li>
               <li data-i18n="check_checklist">Filing checklist passed</li>
             </ul>
+            <div class="vig-stamp" id="vigStamp">FILED<small>दर्ज · 10 Oct 2026</small></div>
           </div>
           <div class="vig-cover vig-cover-front"></div>
-          <div class="vig-stamp" id="vigStamp"><span>FILED<br /><span lang="hi">दर्ज</span></span></div>
+          <div class="vig-tape" id="vigTape"><span class="vig-tape-knot"></span></div>
         </div>
       </div>
     </div>
@@ -82,6 +83,7 @@
       <span class="proof-num" id="proofAgents" data-target="0">0</span>
       <span class="proof-label" data-i18n="proof_agents">Cline SDK agents</span>
     </div>
+    <p class="proof-caption" data-i18n="proof_caption">Live from Haq's knowledge base</p>
   </section>
 
   <section class="how-it-works" id="howItWorks" aria-labelledby="howTitle">
@@ -187,12 +189,20 @@
     <!-- Desk -->
     <section class="desk" id="desk" aria-live="polite">
       <div class="desk-empty" id="deskEmpty">
-        <div class="folder" aria-hidden="true">
-          <div class="folder-tab" data-i18n="case_file_tab">CASE FILE</div>
-          <div class="folder-body">
-            <span class="folder-line"></span><span class="folder-line short"></span><span class="folder-line"></span>
-          </div>
-        </div>
+        <ul class="get-list" aria-hidden="true">
+          <li>
+            <span class="how-icon"><svg viewBox="0 0 48 48"><path d="M4 21V9l8-5 8 5v12h-5v-6h-6v6H4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
+            <span data-i18n="get_1">The office responsible for your problem</span>
+          </li>
+          <li>
+            <span class="how-icon"><svg viewBox="0 0 48 48"><rect x="10" y="7" width="28" height="34" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 23 5 5 11-13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 33h16" stroke="currentColor" stroke-width="2"/></svg></span>
+            <span data-i18n="get_2">A complaint and RTI application, checked before you see them</span>
+          </li>
+          <li>
+            <span class="how-icon"><svg viewBox="0 0 48 48"><circle cx="24" cy="25" r="16" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 15v10l7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M24 6v4M14 9l2 3M34 9l-2 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+            <span data-i18n="get_3">Deadlines tracked, with your appeal drafted automatically</span>
+          </li>
+        </ul>
         <h2 data-i18n="desk_title">Your case file opens here</h2>
         <p data-i18n="desk_lede">Haq's caseworker works in front of you: it finds the office responsible, checks the law, drafts your papers, checks them against a filing checklist, and plans your deadlines.</p>
         <ul class="promise">
