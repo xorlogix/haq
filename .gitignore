@@ -3,5 +3,7 @@ data/
 data-test/
 .env
 *.log
+server_out.log
+server_err.log
 .DS_Store
 scripts/_*.mjs
